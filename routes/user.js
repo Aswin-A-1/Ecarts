@@ -14,5 +14,11 @@ router.get('/resendotp', controller.resendOtp)
 router.get('/otpvarification', controller.getOtpVarification)
 router.post('/otpvarification', controller.postOtpVarification)
 router.get('/logout', controller.getLogout)
+router.get('/forgotpassword', controller.getForgotPassword)
+router.post('/forgotpassword', controller.postForgotPassword)
+router.get('/forgotpswotpverify', controller.getFgtPswOtpVerify)
+router.post('/forgotpswotpverify', controller.postFgtPswOtpVerify)
+router.get('/newpassword', controller.getNewPassword)
+router.post('/newpassword', controller.postNewPassword)
 
 module.exports = router

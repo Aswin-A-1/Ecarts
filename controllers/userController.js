@@ -202,8 +202,6 @@ module.exports = {
     const otp = generateOTP(6);
     req.session.otp = otp;
     await sendOtpEmail(data.email, otp);
-    console.log('newotp')
-    console.log(otp)
     res.redirect("/otpvarification");
   },
 
@@ -232,4 +230,88 @@ module.exports = {
       res.render("otpverification", { message: "OTP is incorrect!" });
     }
   },
+
+  getForgotPassword: (req, res) => {
+    res.render("forgotpassword");
+  },
+
+  postForgotPassword: async (req, res) => {
+    const email = req.body.email;
+    const user = await User.findOne({ email: email });
+    if (user != null) {
+      req.session.email = email
+      //OTP generator
+      const generateOTP = (length) => {
+        const digits = "0123456789";
+        let OTP = "";
+
+        for (let i = 0; i < length; i++) {
+          const randomIndex = crypto.randomInt(0, digits.length);
+          OTP += digits[randomIndex];
+        }
+
+        return OTP;
+      };
+
+      //EmailSending
+      const sendOtpEmail = async (email, otp) => {
+        // console.log(process.env.EMAIL_USER)
+        // console.log(process.env.EMAIL_PASSWORD)
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+          },
+        });
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: email,
+          subject: "One-Time Password (OTP) for Authentication  for ECart",
+          text: `Your Authentication OTP is: ${otp}`,
+        };
+
+        transporter.sendMail(mailOptions, async (error, info) => {
+          if (error) {
+            return console.error("Error:", error);
+          }
+          console.log("Email sent:", info.response);
+        });
+      };
+
+      const otp = generateOTP(6);
+      req.session.otp = otp;
+      await sendOtpEmail(email, otp);
+      res.redirect('/forgotpswotpverify');
+
+    } else {
+      res.render("forgotpassword", { message: "Email not registered!" });
+    }
+  },
+
+  getFgtPswOtpVerify: async (req, res) => {
+    res.render("fpotpverification");
+  },
+
+  postFgtPswOtpVerify: async (req, res) => {
+    if(req.body.otp === req.session.otp){
+      res.redirect('/newpassword')
+    } else {
+      res.render("fpotpverification", { message: 'OTP icorrect!' })
+    }
+  },
+
+  getNewPassword: async (req, res) => {
+    res.render("newpassword");
+  },
+
+  postNewPassword: async (req, res) => {
+    if(req.body.password === req.body.cpassword){
+      await User.updateOne({ email: req.session.email}, {$set: {password: req.body.password }})
+      res.redirect('/')
+    } else {
+      res.render("newpassword", { message: 'Enter same password!' })
+    }
+  },
+
 };
