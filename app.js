@@ -5,6 +5,7 @@ const morgan=require('morgan')
 const mongoose = require('mongoose')
 const userRoute = require('./routes/user')
 const adminRoute = require('./routes/admin')
+const cartRoute = require('./routes/cart')
 const session = require("express-session")
 const crypto = require('crypto')
 const mongoURI = 'mongodb://127.0.0.1:27017/ecartdb'
@@ -39,6 +40,7 @@ app.use(express.urlencoded({ extended: false }))
 
 app.use('/', userRoute)
 app.use('/admin', adminRoute)
+app.use('/cart', cartRoute)
 
 
 app.listen(3000, () => {

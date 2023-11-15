@@ -18,22 +18,33 @@ const storage = multer.diskStorage({
     );
   },
 });
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage }).array('img', 4);
+
+const checkSession = async (req, res, next) => {
+  if (req.session.admin) {
+    next();
+  } else {
+    // No userId in session, redirect to the default page
+    res.redirect("/admin/login");
+  }
+};
 
 router.get("/login", controller.getLogin);
 router.get("/logout", controller.getLogout);
 router.post("/login", controller.postLogin);
-router.get("/usermanagement", controller.getUserManagement);
+router.get("/usermanagement", checkSession, controller.getUserManagement);
 router.get("/productmanagement", controller.getProductManagement);
 router.get("/categorymanagement", controller.getCategoryManagement);
 router.get("/blockuser/:id", controller.getBlockUser);
 router.get("/addcategory", controller.getCategory);
 router.get("/deletecategory/:id", controller.getDeleteCategory);
+router.get("/editcategory/:id", controller.getEditCategory);
+router.post("/addcategory/:id", controller.postEditCategory);
 router.post("/addcategory", controller.postCategory);
 router.get("/addproduct", controller.getAddProduct);
-router.post("/addproduct", upload.single("img"), controller.postAddProduct);
+router.post("/addproduct", upload, controller.postAddProduct);
 router.get("/unlistproduct/:id", controller.getUnlistProduct);
 router.get("/editproduct/:id", controller.getEditProduct);
-router.post("/editproduct/:id", upload.single("img"), controller.postEditProduct);
+router.post("/editproduct/:id", upload, controller.postEditProduct);
 
 module.exports = router;

@@ -61,23 +61,14 @@ module.exports = {
   },
 
   getHome: async (req, res) => {
-    if (req.session.userId) {
-      //Redirect to homepage if authenticated
-      const products = await Product.find({ isListed: true });
-      res.render("userhome", { products });
-    } else {
-      res.redirect("/");
-    }
+    const userId = req.session.userId
+    const products = await Product.find({ isListed: true });
+    res.render("userhome", { products, userId });
   },
 
   getProduct: async (req, res) => {
-    if (req.session.userId) {
-      //Redirect to homepage if authenticated
-      const product = await Product.findOne({ _id: req.params.id });
-      res.render("product", { product });
-    } else {
-      res.redirect("/");
-    }
+    const product = await Product.findOne({ _id: req.params.id });
+    res.render("product", { product });
   },
 
   getRegistration: (req, res) => {
@@ -239,7 +230,7 @@ module.exports = {
     const email = req.body.email;
     const user = await User.findOne({ email: email });
     if (user != null) {
-      req.session.email = email
+      req.session.email = email;
       //OTP generator
       const generateOTP = (length) => {
         const digits = "0123456789";
@@ -282,8 +273,7 @@ module.exports = {
       const otp = generateOTP(6);
       req.session.otp = otp;
       await sendOtpEmail(email, otp);
-      res.redirect('/forgotpswotpverify');
-
+      res.redirect("/forgotpswotpverify");
     } else {
       res.render("forgotpassword", { message: "Email not registered!" });
     }
@@ -294,10 +284,10 @@ module.exports = {
   },
 
   postFgtPswOtpVerify: async (req, res) => {
-    if(req.body.otp === req.session.otp){
-      res.redirect('/newpassword')
+    if (req.body.otp === req.session.otp) {
+      res.redirect("/newpassword");
     } else {
-      res.render("fpotpverification", { message: 'OTP icorrect!' })
+      res.render("fpotpverification", { message: "OTP icorrect!" });
     }
   },
 
@@ -306,12 +296,24 @@ module.exports = {
   },
 
   postNewPassword: async (req, res) => {
-    if(req.body.password === req.body.cpassword){
-      await User.updateOne({ email: req.session.email}, {$set: {password: req.body.password }})
-      res.redirect('/')
+    if (req.body.password === req.body.cpassword) {
+      await User.updateOne(
+        { email: req.session.email },
+        { $set: { password: req.body.password } }
+      );
+      res.redirect("/");
     } else {
-      res.render("newpassword", { message: 'Enter same password!' })
+      res.render("newpassword", { message: "Enter same password!" });
     }
   },
 
+  getProfile: async (req, res) => {
+    const id = req.params.id
+    const user = await User.findOne({ _id: id })
+    res.render('userprofile', { user })
+  },
+
+  getAddress: async (req, res) => {
+    res.render('address')
+  },
 };

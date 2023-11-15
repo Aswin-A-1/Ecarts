@@ -42,13 +42,8 @@ module.exports = {
   },
 
   getUserManagement: async (req, res) => {
-    if (req.session.admin) {
-      //Redirect to usermanagement if authenticated
-      const users = await User.find()
-      res.render("usermanagement", { users });
-    } else {
-      res.redirect("/admin/login");
-    }
+    const users = await User.find()
+    res.render("usermanagement", { users });
   },
 
   getProductManagement: async (req, res) => {
@@ -90,13 +85,31 @@ module.exports = {
     res.redirect('/admin/categorymanagement')
   },
 
+  getEditCategory: async (req, res) => {
+    const id = req.params.id
+    const category = await Category.findOne( { _id: id } )
+    res.render('editcategory', { category: category })
+  },
+
+  postEditCategory: async (req, res) => {
+    const id = req.params.id
+    const categoryname = req.body.categoryname
+    await Category.updateOne({_id: id}, {$set: { category: categoryname }})
+    res.redirect('/admin/categorymanagement')
+  },
+
   postCategory: async (req, res) => {
     const category = req.body.categoryname
-    const newCategory = new Category({
-      category: category,
-    })
-    newCategory.save()
-    res.redirect('/admin/categorymanagement')
+    const isthere = await Category.findOne( { category: category } )
+    if(isthere === null){
+      const newCategory = new Category({
+        category: category,
+      })
+      newCategory.save()
+      res.redirect('/admin/categorymanagement')
+    } else {
+      res.render('addcategory', { message: 'Category already exist!' })
+    }
   },
 
   getAddProduct: async (req, res) => {
@@ -113,7 +126,7 @@ module.exports = {
       model: model,
       description: discription,
       rating: rating,
-      image: req.file.path.substring(6),
+      image: req.files.map(file => file.path.substring(6)),
       isListed: true,
     })
 
@@ -136,7 +149,7 @@ module.exports = {
 
   postEditProduct: async (req, res) => {
     const id = req.params.id
-    const image = req.file.path.substring(6)
+    const image = req.files.map(file => file.path.substring(6))
     const { productname, category, price, model, description, rating, isListed } = req.body
     await Product.updateOne({_id: id}, {$set: {productname: productname, category: category, price: price, model: model, description: description, rating: rating, image: image, isListed: isListed}})
     res.redirect('/admin/productmanagement')

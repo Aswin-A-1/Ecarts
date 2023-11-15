@@ -32,30 +32,36 @@
     <div class="container mt-5 mb-5 pb-5">
         <div class="row">
             <div class="col-md-4">
-                <img src="/static/<%= product.image %>" alt="<%= product.productname %>" class="img-fluid">
+                <img src="/static/<%= product.image[0] %>" alt="<%= product.productname %>" class="img-fluid">
             </div>
             <div class="col-md-8">
-                <h1><%= product.productname %></h1>
-                <p>Price: ₹ <%= product.price %></p>
-                <p><%= product.description %></p>
-                <p>Rating: <%= product.rating %></p>
+                <h1>
+                    <%= product.productname %>
+                </h1>
+                <p>Price: ₹ <%= product.price %>
+                </p>
+                <p>
+                    <%= product.description %>
+                </p>
+                <p>Rating: <%= product.rating %>
+                </p>
                 <div class="row ml-1">
-                    <button class="btn btn-primary">Add to Cart</button>
-                    <button class="btn btn-warning ml-2 text-light">Buy Now</button>
+                    <a href="/cart/addtocart/<%= product._id %>" class="btn btn-primary" id="addToCart">Add to Cart</a>
+                    <a href="#" class="btn btn-warning ml-2 text-light" id="buyNow">Buy Now</a>
                 </div>
             </div>
         </div>
     </div>
-    
+
 
     <%- include('footer') %>
 
 
-    
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
 </html>

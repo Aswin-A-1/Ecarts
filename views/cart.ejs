@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Shopping Cart</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Custom Styles */
+        /* ... */
+    </style>
+</head>
+
+<body class="bg-light">
+    <header class="navbar navbar-expand-lg navbar-light bg-primary">
+        <a class="navbar-brand text-light" href="#">E-Cart</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <input class="form-control mr-sm-2 ml-auto col-md-4" type="search" placeholder="Search Product"
+                aria-label="Search">
+            <button class="btn btn-light" type="submit">Search</button>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link text-light" href="/cart">Cart</a></li>
+                <li class="nav-item"><a class="nav-link text-light" href="#">Wishlist</a></li>
+                <li class="nav-item"><a class="nav-link text-light" href="/userprofile/<%= userId %>">Account</a></li>
+                <li class="nav-item"><a class="nav-link text-light" href="/logout">Logout</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="container mt-5">
+        <h1 class="text-primary">Shopping Cart</h1>
+        <hr>
+
+        <div class="row">
+            <div class="col-md-8">
+                <% if (cart.length> 0) { %>
+                    <% cart.forEach(product=> { %>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <img src="/static/<%= product.image %>" alt="<%= product.product %>"
+                                            class="img-fluid" style="height: 120px; width: 100px;">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h5>
+                                            <%= product.product %>
+                                        </h5>
+                                        <p><strong>Price:</strong> ₹ <%= product.price %>
+                                        </p>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <p><strong>Quantity: </strong></p>
+                                            </div>
+                                            <div class="input-group col-md-6">
+                                                <div class="input-group-prepend">
+                                                    <button class="btn btn-outline-secondary" type="button"
+                                                        id="subtractBtn">-</button>
+                                                </div>
+                                                <input type="number" value="<%= product.quantity %>" min="1" max="10"
+                                                    class="form-control" id="quantityInput" style="width: 30px;">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-outline-secondary" type="button"
+                                                        id="addBtn">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p><strong>Total:</strong> ₹ <%= product.price * product.quantity %>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-danger">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <% }); %>
+                            <% } else { %>
+                                <div class="col">
+                                    <h1 class="text-center">Cart is empty!</h1>
+                                </div>
+                                <% } %>
+            </div>
+
+            <% if (cart.length> 0) { %>
+                <!-- Cart Summary -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Cart Summary</h5>
+                            <hr>
+                            <% let totalItems=0; let totalPrice=0; cart.forEach(product=> {
+                                totalItems += product.quantity;
+                                totalPrice += product.price * product.quantity;
+                                });
+                                %>
+                                <p>Total Items: <%= totalItems %>
+                                </p>
+                                <p>Total Price: ₹ <%= totalPrice %>
+                                </p>
+                                <a href="/checkout" class="btn btn-primary btn-block">Proceed to Checkout</a>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const quantityInput = document.getElementById("quantityInput");
+            const subtractBtn = document.getElementById("subtractBtn");
+            const addBtn = document.getElementById("addBtn");
+
+            subtractBtn.addEventListener("click", function () {
+                let currentValue = parseInt(quantityInput.value);
+                if (currentValue > 1) {
+                    quantityInput.value = currentValue - 1;
+                }
+                if (quantityInput.value === "1") {
+                    subtractBtn.disabled = true;
+                }
+            });
+
+            addBtn.addEventListener("click", function () {
+                let currentValue = parseInt(quantityInput.value);
+                quantityInput.value = currentValue + 1;
+                subtractBtn.disabled = false;
+            });
+
+            quantityInput.addEventListener("input", function () {
+                let currentValue = parseInt(quantityInput.value);
+                if (currentValue === 1) {
+                    subtractBtn.disabled = true;
+                } else {
+                    subtractBtn.disabled = false;
+                }
+            });
+        });
+    </script>
+
+    <!-- Include Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
