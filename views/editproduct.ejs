@@ -67,6 +67,10 @@
                                 <label for="img" class="form-label">Product Image</label>
                                 <input type="file" class="form-control" id="img" name="img" accept="image/*" required multiple>
                             </div>
+                            <div class="mb-3">
+                                <label for="stock" class="form-label">Stock</label>
+                                <input type="number" class="form-control" id="stock" name="stock" value="<%= product.stock %>" required>
+                            </div>
                             <div class="mb-4">
                                 <label for="isListed" class="form-label">IsListed</label>
                                 <select class="form-select" id="isListed" name="isListed" required>

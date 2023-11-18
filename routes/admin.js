@@ -35,6 +35,7 @@ router.post("/login", controller.postLogin);
 router.get("/usermanagement", checkSession, controller.getUserManagement);
 router.get("/productmanagement", controller.getProductManagement);
 router.get("/categorymanagement", controller.getCategoryManagement);
+router.get("/ordermanagement", controller.getOrderManagement);
 router.get("/blockuser/:id", controller.getBlockUser);
 router.get("/addcategory", controller.getCategory);
 router.get("/deletecategory/:id", controller.getDeleteCategory);
@@ -46,5 +47,6 @@ router.post("/addproduct", upload, controller.postAddProduct);
 router.get("/unlistproduct/:id", controller.getUnlistProduct);
 router.get("/editproduct/:id", controller.getEditProduct);
 router.post("/editproduct/:id", upload, controller.postEditProduct);
+router.post("/ordrstatus/:id", upload, controller.postUpdateOrderstatus);
 
 module.exports = router;

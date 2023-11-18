@@ -46,5 +46,12 @@ router.get('/newpassword', controller.getNewPassword)
 router.post('/newpassword', controller.postNewPassword)
 router.get('/userprofile/:id', checkSessionAndBlocked, controller.getProfile)
 router.get('/useraddress', checkSessionAndBlocked, controller.getAddress)
+router.get('/addaddress', controller.getAddAddress)
+router.post('/addaddress', controller.postAddAddress)
+router.get('/addressedit/:id', controller.getAddressEdit)
+router.post('/addressedit/:id', controller.postAddressEdit)
+router.get('/addressdelete/:id', controller.getAddressDelete)
+router.get('/orders', controller.getOrders)
+router.get('/cancelorder/:id', controller.getCancelOrder)
 
 module.exports = router

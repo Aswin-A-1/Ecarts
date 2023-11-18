@@ -1,5 +1,7 @@
 const User = require("../models/userModel");
 const Product = require("../models/productModel");
+const Address = require("../models/addressModel");
+const Order = require("../models/orderModel");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
@@ -62,7 +64,7 @@ module.exports = {
 
   getHome: async (req, res) => {
     const userId = req.session.userId
-    const products = await Product.find({ isListed: true });
+    const products = await Product.find({ isListed: true, stock: { $gt: 0 } });
     res.render("userhome", { products, userId });
   },
 
@@ -314,6 +316,59 @@ module.exports = {
   },
 
   getAddress: async (req, res) => {
-    res.render('address')
+    const userId = req.session.userId
+    const user = await User.findOne({ _id: userId })
+    const addresses = await Address.find( { userid: userId } )
+    res.render('address', { user, userId, addresses })
+  },
+
+  getAddAddress: async (req, res) => {
+    res.render('addaddress')
+  },
+
+  postAddAddress: async (req, res) => {
+    const { firstname, lastname, address, city, state, pincode, phone } = req.body
+    const newAddress = new Address({
+      userid: req.session.userId,
+      firstname: firstname,
+      lastname: lastname,
+      address: address,
+      city: city,
+      state: state,
+      pincode: pincode,
+      phone: phone,
+    })
+
+    newAddress.save()
+    res.redirect('/useraddress')
+  },
+
+  getAddressEdit: async (req, res) => {
+    const addressData = await Address.findOne( { _id: req.params.id } )
+    res.render('editaddress', { addressData })
+  },
+
+  postAddressEdit: async (req, res) => {
+    await Address.updateOne({_id: req.params.id}, {$set: {firstname: req.body.firstname, lastname: req.body.lastname, address: req.body.address, city: req.body.city, state: req.body.state, pincode: req.body.pincode, phone: req.body.phone}})
+    res.redirect('/useraddress')
+  },
+
+  getAddressDelete: async (req, res) => {
+    const addressId = req.params.id
+    await Address.findByIdAndDelete(addressId)
+    res.redirect('/useraddress')
+  },
+
+  getOrders: async (req, res) => {
+    const userId = req.session.userId
+    const user = await User.findOne({ _id: userId })
+    const orders = await Order.find( { userid: userId } )
+    res.render('orders', { user, userId, orders })
+  },
+
+  getCancelOrder: async (req, res) => {
+    const orderId = req.params.id
+    await Order.findByIdAndDelete(orderId)
+    res.redirect('/orders')
   },
 };

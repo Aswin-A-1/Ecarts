@@ -14,7 +14,7 @@
 
 <body class="bg-light">
     <header class="navbar navbar-expand-lg navbar-light bg-primary">
-        <a class="navbar-brand text-light" href="#">E-Cart</a>
+        <a class="navbar-brand text-light" href="/userhome">E-Cart</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -59,22 +59,27 @@
                                             </div>
                                             <div class="input-group col-md-6">
                                                 <div class="input-group-prepend">
-                                                    <button class="btn btn-outline-secondary" type="button"
-                                                        id="subtractBtn">-</button>
+                                                    <!-- <button class="btn btn-outline-secondary" type="button"
+                                                        id="subtractBtn">-</button> -->
+                                                        <% if (product.quantity > 1) { %>
+                                                            <a href="/cart/subcartquantity/<%= product._id %>" class="btn btn-outline-secondary" id="subtractBtn">-</a>
+                                                        <% } %>
                                                 </div>
                                                 <input type="number" value="<%= product.quantity %>" min="1" max="10"
-                                                    class="form-control" id="quantityInput" style="width: 30px;">
+                                                    class="form-control" id="quantityInput" style="width: 30px;" readonly>
                                                 <div class="input-group-append">
-                                                    <button class="btn btn-outline-secondary" type="button"
-                                                        id="addBtn">+</button>
+                                                    <!-- <button class="btn btn-outline-secondary" type="button"
+                                                        id="addBtn">+</button> -->
+                                                    <a href="/cart/addcartquantity/<%= product._id %>" class="btn btn-outline-secondary" id="addBtn">+</a>
                                                 </div>
                                             </div>
                                         </div>
-                                        <p><strong>Total:</strong> ₹ <%= product.price * product.quantity %>
+                                        <p class="mt-2"><strong>Total:</strong> ₹ <%= product.price * product.quantity %>
                                         </p>
                                     </div>
                                     <div class="col-md-3">
-                                        <button class="btn btn-danger">Remove</button>
+                                        <!-- <button class="btn btn-danger">Remove</button> -->
+                                        <a href="/cart/removefromcart/<%= product._id %>" class="btn btn-danger">Remove</a>
                                     </div>
                                 </div>
                             </div>
@@ -103,7 +108,7 @@
                                 </p>
                                 <p>Total Price: ₹ <%= totalPrice %>
                                 </p>
-                                <a href="/checkout" class="btn btn-primary btn-block">Proceed to Checkout</a>
+                                <a href="/cart/checkout" class="btn btn-primary btn-block">Proceed to Checkout</a>
                         </div>
                     </div>
                 </div>

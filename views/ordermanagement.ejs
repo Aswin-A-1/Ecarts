@@ -46,7 +46,7 @@
                             </a>
                         </li>
                         <li class="nav-item mt-4">
-                            <a class="nav-link text-primary" href="/admin/productmanagement">
+                            <a class="nav-link text-dark" href="/admin/productmanagement">
                                 Product Management
                             </a>
                         </li>
@@ -56,7 +56,7 @@
                             </a>
                         </li>
                         <li class="nav-item mt-4">
-                            <a class="nav-link text-dark" href="/admin/ordermanagement">
+                            <a class="nav-link text-primary" href="/admin/ordermanagement">
                                 Order Management
                             </a>
                         </li>
@@ -70,70 +70,67 @@
             </nav>
 
             <!-- Main Content -->
-            <main class="col-md-8 col-lg-10">
+            <main class="col-md-8 col-lg-10 col-sm-12">
                 <div class="custom-border maindiv p-5">
-                    <a href="/admin/addproduct" class="btn btn-primary mb-4">Add Product</a>
                     <div class="container ">
                         <!-- Add your user data tables here -->
                         <table class="table ">
                             <thead>
                                 <tr>
-                                    <th>Product Name</th>
-                                    <th>Category</th>
-                                    <th>Price</th>
-                                    <th>Model</th>
-                                    <th>Rating</th>
-                                    <th>Image</th>
-                                    <th>Stock</th>
+                                    <th>User</th>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Total Amount</th>
                                     <th>Status</th>
-                                    <th>List/UnList</th>
+                                    <th>Order Date</th>
                                     <th>Action</th>
-                                    <!-- Add more table headers as needed -->
                                 </tr>
                             </thead>
                             <tbody id="userTableBody">
-                                <% if( products.length > 0) { %>
-                                    <% products.forEach( product=> { %>
+                                <% if(orders.length> 0) { %>
+                                    <% orders.forEach( order => { %>
                                         <tr>
                                             <td>
-                                                <%= product.productname %>
+                                                <%= order.user %>
                                             </td>
                                             <td>
-                                                <%= product.category %>
+                                                <%= order.product %>
                                             </td>
                                             <td>
-                                                <%= product.price %>
+                                                <%= order.quantity %>
                                             </td>
                                             <td>
-                                                <%= product.model %>
+                                                <% let total = order.price * order.quantity %>
+                                                <%= total %>
                                             </td>
                                             <td>
-                                                <%= product.rating %>
+                                                <form action="/admin/ordrstatus/<%= order._id %>" method="POST">
+                                                    <!-- Depending on your system, you might prefer a dropdown -->
+                                                    <select name="status" class="form-control">
+                                                        <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                                                        <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
+                                                        <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                                        <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                                        <!-- Add other status options -->
+                                                    </select>
                                             </td>
                                             <td>
-                                                <img style="max-height: 50px; max-width: 50px;" src="/static/<%= product.image[0] %>" alt="no img">
-
+                                                <% 
+                                                // Formatting the date directly
+                                                const formattedDate = new Date(order.orderdate).toLocaleDateString('en-US', {
+                                                    weekday: 'short',
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    year: 'numeric'
+                                                });
+                                                %>
+                                                <%= formattedDate %>
                                             </td>
                                             <td>
-                                                <%= product.stock %>
-                                            </td>
-                                            <td>
-                                                <% if (product.isListed) { %>
-                                                    <span class="text-success">Listed</span>
-                                                <% } else { %>
-                                                    <span class="text-danger">Not Listed</span>
-                                                <% } %>
-                                            </td>
-                                            <td>
-                                                <% if (product.isListed) { %>
-                                                    <a href="/admin/unlistproduct/<%= product._id %>" class="btn btn-danger">UnList</a>
-                                                <% } else { %>
-                                                    <a href="/admin/unlistproduct/<%= product._id %>" class="btn btn-success">List</a>
-                                                <% } %>
-                                            </td>
-                                            <td>
-                                                <!-- Edit Button -->
-                                                <a href="/admin/editproduct/<%= product._id %>" class="btn btn-primary">Edit</a>
+                                                <!-- <a href="/cancelorder/<%= order._id %>"
+                                                    class="btn btn-primary">Update</a> -->
+                                                    <button type="submit" class="btn btn-primary mt-2">Update</button>
+                                                </form>
                                             </td>
                                         </tr>
                                         <% }); %>

@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const Category = require("../models/categoryModel");
 const Product = require("../models/productModel");
+const Order = require("../models/orderModel");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
@@ -67,6 +68,16 @@ module.exports = {
     }
   },
 
+  getOrderManagement: async (req, res) => {
+    if (req.session.admin) {
+      //Redirect to categorymanagement if authenticated
+      const orders = await Order.find()
+      res.render("ordermanagement", { orders });
+    } else {
+      res.redirect("/admin/login");
+    }
+  },
+
   getBlockUser: async (req, res) => {
     const user = await User.findOne({ _id: req.params.id })
     user.isBlocked = !user.isBlocked
@@ -118,7 +129,7 @@ module.exports = {
   },
 
   postAddProduct: async (req, res) => {
-    const { productname, category, price, model, discription, rating } = req.body
+    const { productname, category, price, model, discription, rating, stock } = req.body
     const newProduct = new Product({
       productname: productname,
       category: category,
@@ -127,6 +138,7 @@ module.exports = {
       description: discription,
       rating: rating,
       image: req.files.map(file => file.path.substring(6)),
+      stock: stock,
       isListed: true,
     })
 
@@ -150,9 +162,15 @@ module.exports = {
   postEditProduct: async (req, res) => {
     const id = req.params.id
     const image = req.files.map(file => file.path.substring(6))
-    const { productname, category, price, model, description, rating, isListed } = req.body
-    await Product.updateOne({_id: id}, {$set: {productname: productname, category: category, price: price, model: model, description: description, rating: rating, image: image, isListed: isListed}})
+    const { productname, category, price, model, description, rating, stock, isListed } = req.body
+    await Product.updateOne({_id: id}, {$set: {productname: productname, category: category, price: price, model: model, description: description, rating: rating, image: image,stock: stock, isListed: isListed}})
     res.redirect('/admin/productmanagement')
+  },
+
+  postUpdateOrderstatus: async (req, res) => {
+    const orderid = req.params.id
+    await Order.updateOne( { _id: orderid }, { status: req.body.status } )
+    res.redirect('/admin/ordermanagement')
   },
 
 };
