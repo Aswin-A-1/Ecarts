@@ -17,13 +17,19 @@ module.exports = {
   },
 
   getLogout: (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        console.log("Error distroying session: ", err);
-      } else {
-        res.redirect("/");
-      }
-    });
+    try {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Error destroying session:", err);
+          res.status(500).send("Error logging out");
+        } else {
+          res.redirect("/");
+        }
+      });
+    } catch (err) {
+      console.error("Error in getLogout:", err);
+      res.status(500).send("Internal Server Error");
+    }
   },
 
   postLogin: async (req, res) => {
@@ -57,25 +63,44 @@ module.exports = {
           res.render("userlogin", { message: "login failed!" });
         }
       } catch (err) {
-        console.log(err);
+        console.error(err);
+        return res.status(500).send("Internal Server Error");
       }
     }
   },
 
   getHome: async (req, res) => {
-    const userId = req.session.userId
-    const products = await Product.find({ isListed: true, stock: { $gt: 0 } });
-    res.render("userhome", { products, userId });
+    try {
+      const userId = req.session.userId;
+      const products = await Product.find({
+        isListed: true,
+        stock: { $gt: 0 },
+      });
+      res.render("userhome", { products, userId });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Internal Server Error");
+    }
   },
 
   getProduct: async (req, res) => {
-    const product = await Product.findOne({ _id: req.params.id });
-    res.render("product", { product });
+    try {
+      const product = await Product.findOne({ _id: req.params.id });
+      res.render("product", { product });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Internal Server Error");
+    }
   },
 
   getRegistration: (req, res) => {
-    const otpSent = false;
-    res.render("userregistration", { otpSent });
+    try {
+      const otpSent = false;
+      res.render("userregistration", { otpSent });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Internal Server Error");
+    }
   },
 
   postRegistration: async (req, res) => {
@@ -310,24 +335,25 @@ module.exports = {
   },
 
   getProfile: async (req, res) => {
-    const id = req.params.id
-    const user = await User.findOne({ _id: id })
-    res.render('userprofile', { user })
+    const id = req.params.id;
+    const user = await User.findOne({ _id: id });
+    res.render("userprofile", { user });
   },
 
   getAddress: async (req, res) => {
-    const userId = req.session.userId
-    const user = await User.findOne({ _id: userId })
-    const addresses = await Address.find( { userid: userId } )
-    res.render('address', { user, userId, addresses })
+    const userId = req.session.userId;
+    const user = await User.findOne({ _id: userId });
+    const addresses = await Address.find({ userid: userId });
+    res.render("address", { user, userId, addresses });
   },
 
   getAddAddress: async (req, res) => {
-    res.render('addaddress')
+    res.render("addaddress");
   },
 
   postAddAddress: async (req, res) => {
-    const { firstname, lastname, address, city, state, pincode, phone } = req.body
+    const { firstname, lastname, address, city, state, pincode, phone } =
+      req.body;
     const newAddress = new Address({
       userid: req.session.userId,
       firstname: firstname,
@@ -337,38 +363,51 @@ module.exports = {
       state: state,
       pincode: pincode,
       phone: phone,
-    })
+    });
 
-    newAddress.save()
-    res.redirect('/useraddress')
+    newAddress.save();
+    res.redirect("/useraddress");
   },
 
   getAddressEdit: async (req, res) => {
-    const addressData = await Address.findOne( { _id: req.params.id } )
-    res.render('editaddress', { addressData })
+    const addressData = await Address.findOne({ _id: req.params.id });
+    res.render("editaddress", { addressData });
   },
 
   postAddressEdit: async (req, res) => {
-    await Address.updateOne({_id: req.params.id}, {$set: {firstname: req.body.firstname, lastname: req.body.lastname, address: req.body.address, city: req.body.city, state: req.body.state, pincode: req.body.pincode, phone: req.body.phone}})
-    res.redirect('/useraddress')
+    await Address.updateOne(
+      { _id: req.params.id },
+      {
+        $set: {
+          firstname: req.body.firstname,
+          lastname: req.body.lastname,
+          address: req.body.address,
+          city: req.body.city,
+          state: req.body.state,
+          pincode: req.body.pincode,
+          phone: req.body.phone,
+        },
+      }
+    );
+    res.redirect("/useraddress");
   },
 
   getAddressDelete: async (req, res) => {
-    const addressId = req.params.id
-    await Address.findByIdAndDelete(addressId)
-    res.redirect('/useraddress')
+    const addressId = req.params.id;
+    await Address.findByIdAndDelete(addressId);
+    res.redirect("/useraddress");
   },
 
   getOrders: async (req, res) => {
-    const userId = req.session.userId
-    const user = await User.findOne({ _id: userId })
-    const orders = await Order.find( { userid: userId } )
-    res.render('orders', { user, userId, orders })
+    const userId = req.session.userId;
+    const user = await User.findOne({ _id: userId });
+    const orders = await Order.find({ userid: userId });
+    res.render("orders", { user, userId, orders });
   },
 
   getCancelOrder: async (req, res) => {
-    const orderId = req.params.id
-    await Order.findByIdAndDelete(orderId)
-    res.redirect('/orders')
+    const orderId = req.params.id;
+    await Order.findByIdAndDelete(orderId);
+    res.redirect("/orders");
   },
 };

@@ -48,7 +48,7 @@ module.exports = {
     const cart = await Cart.findOne({ _id: productId });
     cart.quantity++;
     cart.save();
-    res.redirect("/cart");
+    res.json({ updatedQuantity: cart.quantity })
   },
 
   getSubQuantity: async (req, res) => {
@@ -57,7 +57,7 @@ module.exports = {
     if (cart.quantity > 1) {
       cart.quantity--;
       cart.save();
-      res.redirect("/cart");
+      res.json({ updatedQuantity: cart.quantity })
     } else {
         res.redirect("/cart");
     }

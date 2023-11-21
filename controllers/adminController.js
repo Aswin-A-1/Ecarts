@@ -48,34 +48,19 @@ module.exports = {
   },
 
   getProductManagement: async (req, res) => {
-    if (req.session.admin) {
-      //Redirect to productmanagement if authenticated
-      const products = await Product.find()
+    const products = await Product.find()
     
       res.render("productmanagement",{products} );
-    } else {
-      res.redirect("/admin/login");
-    }
   },
   
   getCategoryManagement: async (req, res) => {
-    if (req.session.admin) {
-      //Redirect to categorymanagement if authenticated
-      const categories = await Category.find()
+    const categories = await Category.find()
       res.render("categorymanagement", { categories });
-    } else {
-      res.redirect("/admin/login");
-    }
   },
 
   getOrderManagement: async (req, res) => {
-    if (req.session.admin) {
-      //Redirect to categorymanagement if authenticated
-      const orders = await Order.find()
+    const orders = await Order.find()
       res.render("ordermanagement", { orders });
-    } else {
-      res.redirect("/admin/login");
-    }
   },
 
   getBlockUser: async (req, res) => {
