@@ -34,10 +34,11 @@ module.exports = {
 
   postLogin: async (req, res) => {
     const { email, password } = req.body;
-
+    console.log('changed login')
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email)) {
-      res.render("userlogin", { message: "Email not valid!" });
+    const passwordPattern = /^.{8,}$/;
+    if (!emailPattern.test(email) || !passwordPattern.test(password)) {
+      res.render("userlogin", { message: "Email and password should be valid!" });
     } else {
       try {
         const user = await User.findOne({ email: email });
@@ -224,8 +225,12 @@ module.exports = {
   },
 
   getOtpVarification: (req, res) => {
-    const otp = req.session.otp;
-    res.render("otpverification");
+    try {
+      const otp = req.session.otp;
+      res.render("otpverification");
+    } catch (err) {
+      console.log(err);
+    }
   },
 
   postOtpVarification: async (req, res) => {
@@ -250,7 +255,11 @@ module.exports = {
   },
 
   getForgotPassword: (req, res) => {
-    res.render("forgotpassword");
+    try {
+      res.render("forgotpassword");
+    } catch (err) {
+      console.log(err);
+    }
   },
 
   postForgotPassword: async (req, res) => {
@@ -307,7 +316,11 @@ module.exports = {
   },
 
   getFgtPswOtpVerify: async (req, res) => {
-    res.render("fpotpverification");
+    try {
+      res.render("fpotpverification");
+    } catch (err) {
+      console.log(err);
+    }
   },
 
   postFgtPswOtpVerify: async (req, res) => {
@@ -319,7 +332,11 @@ module.exports = {
   },
 
   getNewPassword: async (req, res) => {
-    res.render("newpassword");
+    try {
+      res.render("newpassword");
+    } catch (err) {
+      console.log(err);
+    }
   },
 
   postNewPassword: async (req, res) => {
@@ -335,20 +352,32 @@ module.exports = {
   },
 
   getProfile: async (req, res) => {
-    const id = req.params.id;
-    const user = await User.findOne({ _id: id });
-    res.render("userprofile", { user });
+    try {
+      const id = req.params.id;
+      const user = await User.findOne({ _id: id });
+      res.render("userprofile", { user });
+    } catch (err) {
+      console.log(err);
+    }
   },
 
   getAddress: async (req, res) => {
-    const userId = req.session.userId;
-    const user = await User.findOne({ _id: userId });
-    const addresses = await Address.find({ userid: userId });
-    res.render("address", { user, userId, addresses });
+    try {
+      const userId = req.session.userId;
+      const user = await User.findOne({ _id: userId });
+      const addresses = await Address.find({ userid: userId });
+      res.render("address", { user, userId, addresses });
+    } catch (err) {
+      console.log(err);
+    }
   },
 
   getAddAddress: async (req, res) => {
-    res.render("addaddress");
+    try {
+      res.render("addaddress");
+    } catch (err) {
+      console.log(err);
+    }
   },
 
   postAddAddress: async (req, res) => {
@@ -365,49 +394,73 @@ module.exports = {
       phone: phone,
     });
 
-    newAddress.save();
-    res.redirect("/useraddress");
+    try {
+      newAddress.save();
+      res.redirect("/useraddress");
+    } catch (err) {
+      console.log("Error saving address: ", err);
+    }
   },
 
   getAddressEdit: async (req, res) => {
-    const addressData = await Address.findOne({ _id: req.params.id });
-    res.render("editaddress", { addressData });
+    try {
+      const addressData = await Address.findOne({ _id: req.params.id });
+      res.render("editaddress", { addressData });
+    } catch (err) {
+      console.log(err);
+    }
   },
 
   postAddressEdit: async (req, res) => {
-    await Address.updateOne(
-      { _id: req.params.id },
-      {
-        $set: {
-          firstname: req.body.firstname,
-          lastname: req.body.lastname,
-          address: req.body.address,
-          city: req.body.city,
-          state: req.body.state,
-          pincode: req.body.pincode,
-          phone: req.body.phone,
-        },
-      }
-    );
-    res.redirect("/useraddress");
+    try {
+      await Address.updateOne(
+        { _id: req.params.id },
+        {
+          $set: {
+            firstname: req.body.firstname,
+            lastname: req.body.lastname,
+            address: req.body.address,
+            city: req.body.city,
+            state: req.body.state,
+            pincode: req.body.pincode,
+            phone: req.body.phone,
+          },
+        }
+      );
+      res.redirect("/useraddress");
+    } catch (err) {
+      console.log("Error updating address: ", err);
+    }
   },
 
   getAddressDelete: async (req, res) => {
     const addressId = req.params.id;
-    await Address.findByIdAndDelete(addressId);
+    try {
+      await Address.findByIdAndDelete(addressId);
+    } catch (err) {
+      console.log("Error deleting the address: ", err);
+    }
     res.redirect("/useraddress");
   },
 
   getOrders: async (req, res) => {
-    const userId = req.session.userId;
-    const user = await User.findOne({ _id: userId });
-    const orders = await Order.find({ userid: userId });
-    res.render("orders", { user, userId, orders });
+    try {
+      const userId = req.session.userId;
+      const user = await User.findOne({ _id: userId });
+      const orders = await Order.find({ userid: userId });
+      res.render("orders", { user, userId, orders });
+    } catch (err) {
+      console.log(err);
+    }
   },
 
   getCancelOrder: async (req, res) => {
-    const orderId = req.params.id;
-    await Order.findByIdAndDelete(orderId);
-    res.redirect("/orders");
+    try {
+      const orderId = req.params.id;
+      await Order.findByIdAndDelete(orderId);
+      res.redirect("/orders");
+    } catch (err) {
+      console.log(err);
+    }
   },
 };

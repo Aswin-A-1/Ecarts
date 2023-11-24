@@ -91,4 +91,43 @@ module.exports = {
     await Cart.deleteMany( { userid: req.session.userId } )
     res.render('orderconfirm')
   },
+
+  postOrderPayment: async (req, res) => {
+      try {
+        var instance = new Razorpay({ key_id: process.env.KEY_ID, key_secret: process.env.KEY_SECRET });
+        var options = {
+          amount: totalPrice,
+          currency: "INR",
+          receipt: "order_rcptid_11",
+        };
+    
+        // Creating the order
+        instance.orders.create(options, function (err, order) {
+          if (err) {
+            console.error(err);
+            res.status(500).send("Error creating order");
+            return;
+          }
+    
+          console.log(order);
+          // Add orderprice to the response object
+          res.send({ orderId: order.id });
+    
+          // Replace razorpayOrderId and razorpayPaymentId with actual values
+          var { validatePaymentVerification, validateWebhookSignature } = require('./dist/utils/razorpay-utils');
+          validatePaymentVerification(
+            { "order_id": order.id, "payment_id": razorpayPaymentId }, // Make sure razorpayPaymentId is defined
+            signature, // Make sure signature is defined
+            secret
+          );
+    
+          // Redirect to /orderdata on successful payment
+          res.redirect('/orderdata');
+        });
+      } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+      }
+  },
+  
 };

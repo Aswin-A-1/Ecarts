@@ -46,7 +46,7 @@
                             </a>
                         </li>
                         <li class="nav-item mt-4">
-                            <a class="nav-link text-primary" href="/admin/productmanagement">
+                            <a class="nav-link text-primary" href="/products/productmanagement">
                                 Product Management
                             </a>
                         </li>
@@ -56,7 +56,7 @@
                             </a>
                         </li>
                         <li class="nav-item mt-4">
-                            <a class="nav-link text-dark" href="/admin/ordermanagement">
+                            <a class="nav-link text-dark" href="/order/ordermanagement">
                                 Order Management
                             </a>
                         </li>
@@ -72,7 +72,7 @@
             <!-- Main Content -->
             <main class="col-md-8 col-lg-10">
                 <div class="custom-border maindiv p-5">
-                    <a href="/admin/addproduct" class="btn btn-primary mb-4">Add Product</a>
+                    <a href="/products/addproduct" class="btn btn-primary mb-4">Add Product</a>
                     <div class="container ">
                         <!-- Add your user data tables here -->
                         <table class="table ">
@@ -99,7 +99,7 @@
                                                 <%= product.productname %>
                                             </td>
                                             <td>
-                                                <%= product.category %>
+                                                <%= product.category.category %>
                                             </td>
                                             <td>
                                                 <%= product.price %>
@@ -126,14 +126,14 @@
                                             </td>
                                             <td>
                                                 <% if (product.isListed) { %>
-                                                    <a href="/admin/unlistproduct/<%= product._id %>" class="btn btn-danger">UnList</a>
+                                                    <a href="/products/unlistproduct/<%= product._id %>" class="btn btn-danger">UnList</a>
                                                 <% } else { %>
-                                                    <a href="/admin/unlistproduct/<%= product._id %>" class="btn btn-success">List</a>
+                                                    <a href="/products/unlistproduct/<%= product._id %>" class="btn btn-success">List</a>
                                                 <% } %>
                                             </td>
                                             <td>
                                                 <!-- Edit Button -->
-                                                <a href="/admin/editproduct/<%= product._id %>" class="btn btn-primary">Edit</a>
+                                                <a href="/products/editproduct/<%= product._id %>" class="btn btn-primary">Edit</a>
                                             </td>
                                         </tr>
                                         <% }); %>

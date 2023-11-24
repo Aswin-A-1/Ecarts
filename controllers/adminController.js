@@ -8,11 +8,16 @@ require("dotenv").config();
 
 module.exports = {
   getLogin: (req, res) => {
-    if (req.session.admin) {
-      //Redirect to dashboard if authenticated
-      res.redirect("/admin/usermanagement");
-    } else {
-      res.render("adminlogin");
+    try {
+      if (req.session.admin) {
+        //Redirect to dashboard if authenticated
+        res.redirect("/admin/usermanagement");
+      } else {
+        res.render("adminlogin");
+      }
+    } catch (err) {
+      console.error("Error in getLogout:", err);
+      res.status(500).send("Internal Server Error");
     }
   },
 
@@ -33,129 +38,126 @@ module.exports = {
   },
 
   getLogout: (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        console.log("Error distroying session: ", err);
-      } else {
-        res.redirect("/admin/login");
-      }
-    });
-  },
-
-  getUserManagement: async (req, res) => {
-    const users = await User.find()
-    res.render("usermanagement", { users });
-  },
-
-  getProductManagement: async (req, res) => {
-    const products = await Product.find()
-    
-      res.render("productmanagement",{products} );
-  },
-  
-  getCategoryManagement: async (req, res) => {
-    const categories = await Category.find()
-      res.render("categorymanagement", { categories });
-  },
-
-  getOrderManagement: async (req, res) => {
-    const orders = await Order.find()
-      res.render("ordermanagement", { orders });
-  },
-
-  getBlockUser: async (req, res) => {
-    const user = await User.findOne({ _id: req.params.id })
-    user.isBlocked = !user.isBlocked
-    user.save()
-    res.redirect('/admin/usermanagement')
-  },
-
-  getCategory: async (req, res) => {
-    
-    res.render('addcategory')
-  },
-
-  getDeleteCategory: async (req, res) => {
-    const categoryId = req.params.id
-    await Category.findByIdAndDelete(categoryId)
-    res.redirect('/admin/categorymanagement')
-  },
-
-  getEditCategory: async (req, res) => {
-    const id = req.params.id
-    const category = await Category.findOne( { _id: id } )
-    res.render('editcategory', { category: category })
-  },
-
-  postEditCategory: async (req, res) => {
-    const id = req.params.id
-    const categoryname = req.body.categoryname
-    await Category.updateOne({_id: id}, {$set: { category: categoryname }})
-    res.redirect('/admin/categorymanagement')
-  },
-
-  postCategory: async (req, res) => {
-    const category = req.body.categoryname
-    const isthere = await Category.findOne( { category: category } )
-    if(isthere === null){
-      const newCategory = new Category({
-        category: category,
-      })
-      newCategory.save()
-      res.redirect('/admin/categorymanagement')
-    } else {
-      res.render('addcategory', { message: 'Category already exist!' })
+    try {
+      req.session.destroy((err) => {
+        if (err) {
+          console.log("Error distroying session: ", err);
+        } else {
+          res.redirect("/admin/login");
+        }
+      });
+    } catch (err) {
+      console.error("Error in getLogout:", err);
+      res.status(500).send("Internal Server Error");
     }
   },
 
-  getAddProduct: async (req, res) => {
-    const categories = await Category.find()
-    res.render('addproduct', { categories })
+  getUserManagement: async (req, res) => {
+    try {
+      const users = await User.find();
+      res.render("usermanagement", { users });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Internal Server Error");
+    }
   },
 
-  postAddProduct: async (req, res) => {
-    const { productname, category, price, model, discription, rating, stock } = req.body
-    const newProduct = new Product({
-      productname: productname,
-      category: category,
-      price: price,
-      model: model,
-      description: discription,
-      rating: rating,
-      image: req.files.map(file => file.path.substring(6)),
-      stock: stock,
-      isListed: true,
-    })
+  getCategoryManagement: async (req, res) => {
+    try {
+      const categories = await Category.find();
+      res.render("categorymanagement", { categories });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Internal Server Error");
+    }
+  },
 
-    newProduct.save()
-    res.redirect('/admin/productmanagement')
+  getBlockUser: async (req, res) => {
+    try {
+      const user = await User.findOne({ _id: req.params.id });
+      user.isBlocked = !user.isBlocked;
+      user.save();
+      res.redirect("/admin/usermanagement");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Internal Server Error");
+    }
+  },
+
+  getCategory: async (req, res) => {
+    try {
+      res.render("addcategory");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Internal Server Error");
+    }
+  },
+
+  getDeleteCategory: async (req, res) => {
+    try {
+      const categoryId = req.params.id;
+      await Category.findByIdAndDelete(categoryId);
+      res.redirect("/admin/categorymanagement");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Internal Server Error");
+    }
+  },
+
+  getEditCategory: async (req, res) => {
+    try {
+      const id = req.params.id;
+      const category = await Category.findOne({ _id: id });
+      res.render("editcategory", { category: category });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Internal Server Error");
+    }
+  },
+
+  postEditCategory: async (req, res) => {
+    const id = req.params.id;
+    const categoryname = req.body.categoryname;
+    try {
+      await Category.updateOne(
+        { _id: id },
+        { $set: { category: categoryname } }
+      );
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Error updating category");
+    }
+    res.redirect("/admin/categorymanagement");
+  },
+
+  postCategory: async (req, res) => {
+    const category = req.body.categoryname;
+    const isthere = await Category.findOne({ category: category });
+    if (isthere === null) {
+      try {
+        const newCategory = new Category({
+          category: category,
+        });
+        newCategory.save();
+      } catch (err) {
+        console.error(err);
+        return res.status(500).send("Error inserting category");
+      }
+      res.redirect("/admin/categorymanagement");
+    } else {
+      res.render("addcategory", { message: "Category already exist!" });
+    }
   },
 
   getUnlistProduct: async (req, res) => {
-    const product = await Product.findOne({ _id: req.params.id })
-    product.isListed = !product.isListed
-    product.save()
-    res.redirect('/admin/productmanagement')
+    const product = await Product.findOne({ _id: req.params.id });
+    try {
+      product.isListed = !product.isListed;
+      product.save();
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Error changing product status");
+    }
+    res.redirect("/admin/productmanagement");
   },
-
-  getEditProduct: async (req, res) => {
-    const product = await Product.findOne({ _id: req.params.id })
-    const categories = await Category.find()
-    res.render('editproduct', { product, categories })
-  },
-
-  postEditProduct: async (req, res) => {
-    const id = req.params.id
-    const image = req.files.map(file => file.path.substring(6))
-    const { productname, category, price, model, description, rating, stock, isListed } = req.body
-    await Product.updateOne({_id: id}, {$set: {productname: productname, category: category, price: price, model: model, description: description, rating: rating, image: image,stock: stock, isListed: isListed}})
-    res.redirect('/admin/productmanagement')
-  },
-
-  postUpdateOrderstatus: async (req, res) => {
-    const orderid = req.params.id
-    await Order.updateOne( { _id: orderid }, { status: req.body.status } )
-    res.redirect('/admin/ordermanagement')
-  },
-
 };

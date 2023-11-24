@@ -51,7 +51,7 @@ router.post('/addaddress', controller.postAddAddress)
 router.get('/addressedit/:id', controller.getAddressEdit)
 router.post('/addressedit/:id', controller.postAddressEdit)
 router.get('/addressdelete/:id', controller.getAddressDelete)
-router.get('/orders', controller.getOrders)
+router.get('/orders', checkSessionAndBlocked, controller.getOrders)
 router.get('/cancelorder/:id', controller.getCancelOrder)
 
 module.exports = router

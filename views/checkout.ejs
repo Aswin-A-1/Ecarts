@@ -6,7 +6,7 @@
     <title>Checkout - Your E-commerce</title>
     <!-- Include Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    
+
 </head>
 
 <body>
@@ -35,48 +35,99 @@
             <div class="col-md-6">
                 <form action="/cart/placeorder" method="POST">
                     <% if( addresses.length> 0 ) { %>
-                    <h4><strong>Select Address</strong></h4>
-                    <% } %>
-                    <% if( addresses.length> 0 ) { %>
-                        <% addresses.forEach( ( address, index )=> { %>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="address"
-                                    value="<%= address._id %>" <% if ( index === 0 ) { %> checked <% } %> >
-                                <label class="form-check-label" for="address<%= index %>">
-                                    <div><%= address.address %></div>
-                                    <div><%= address.city %></div>
-                                    <div><%= address.state %></div>
-                                    <div>Pincode: <%= address.pincode %></div>
-                                </label>
-                            </div>
-                            <br>
-                        <% }); %>
-                        <% } else { %>
-                            <p>You have no saved addresses. Please go to your <a href="/userprofile/<%= userid %>">profile</a> and add an address to proceed with your order.</p>
+                        <h4><strong>Select Address</strong></h4>
                         <% } %>
-                        
-                    <hr>
-                    <% if( addresses.length> 0 ) { %>
-                    <h4><strong>Select Payment Method</strong></h4>
-                    <div class="form-group">
-                        <label for="payment">Choose a payment method:</label>
-                        <select class="form-control" id="payment" name="payment">
-                            <option value="COD">Cash On Delivery</option>
-                            <!-- Add more options as needed -->
-                        </select>
-                    </div>
+                            <% if( addresses.length> 0 ) { %>
+                                <% addresses.forEach( ( address, index )=> { %>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="address"
+                                            value="<%= address._id %>" <% if ( index===0 ) { %> checked <% } %> >
+                                            <label class="form-check-label" for="address<%= index %>">
+                                                <div>
+                                                    <%= address.address %>
+                                                </div>
+                                                <div>
+                                                    <%= address.city %>
+                                                </div>
+                                                <div>
+                                                    <%= address.state %>
+                                                </div>
+                                                <div>Pincode: <%= address.pincode %>
+                                                </div>
+                                            </label>
+                                    </div>
+                                    <br>
+                                    <% }); %>
+                                        <% } else { %>
+                                            <p>You have no saved addresses. Please go to your <a
+                                                    href="/userprofile/<%= userid %>">profile</a> and add an address to
+                                                proceed with your order.</p>
+                                            <% } %>
 
-                    <!-- Button to place order -->
-                    <button type="submit" class="btn btn-primary btn-block">Place Order</button>
-                    <% } %>
+                                                <hr>
+                                                <% if( addresses.length> 0 ) { %>
+                                                    <h4><strong>Select Payment Method</strong></h4>
+                                                    <div class="form-group">
+                                                        <label for="payment">Choose a payment method:</label>
+                                                        <select class="form-control" id="payment" name="payment">
+                                                            <option value="COD">Cash On Delivery</option>
+                                                            <option value="Paynow">Pay Now</option>
+                                                            <!-- Add more options as needed -->
+                                                        </select>
+                                                    </div>
+
+                                                    <!-- Button to place order -->
+                                                    <button type="submit" class="btn btn-primary btn-block" id="orderButton">Place Order</button>
+                                                    <button type="button" class="btn btn-primary btn-block" id="payNowButton">Pay Now</button>
+                                                    <% } %>
                 </form>
             </div>
         </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const paymentSelect = document.getElementById('payment');
+                const orderButton = document.getElementById('orderButton');
+                const payNowButton = document.getElementById('payNowButton');
+                const form = document.getElementById('checkoutForm');
 
-    <!-- Include Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+                function toggleButtons(selectedPayment) {
+                    if (selectedPayment === 'COD') {
+                        orderButton.style.display = 'block';
+                        payNowButton.style.display = 'none';
+                    } else {
+                        orderButton.style.display = 'none';
+                        payNowButton.style.display = 'block';
+                    }
+                }
+
+                paymentSelect.addEventListener('change', function () {
+                    const selectedPayment = paymentSelect.value;
+                    toggleButtons(selectedPayment);
+                });
+
+                payNowButton.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    handlePayNow();
+                });
+
+                function handlePayNow() {
+                    console.log("Processing payment...");
+                }
+
+                // Initial check for the default payment method on page load
+                const defaultPayment = paymentSelect.value;
+                toggleButtons(defaultPayment);
+            });
+
+            function payment() {
+                console.log('paying')
+            }
+        </script>
+
+        <!-- Include Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
 </html>

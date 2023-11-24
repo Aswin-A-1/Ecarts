@@ -46,7 +46,7 @@
                             </a>
                         </li>
                         <li class="nav-item mt-4">
-                            <a class="nav-link text-dark" href="/admin/productmanagement">
+                            <a class="nav-link text-dark" href="/products/productmanagement">
                                 Product Management
                             </a>
                         </li>
@@ -56,7 +56,7 @@
                             </a>
                         </li>
                         <li class="nav-item mt-4">
-                            <a class="nav-link text-primary" href="/admin/ordermanagement">
+                            <a class="nav-link text-primary" href="/order/ordermanagement">
                                 Order Management
                             </a>
                         </li>
@@ -104,7 +104,7 @@
                                                 <%= total %>
                                             </td>
                                             <td>
-                                                <form action="/admin/ordrstatus/<%= order._id %>" method="POST">
+                                                <form action="/order/ordrstatus/<%= order._id %>" method="POST">
                                                     <!-- Depending on your system, you might prefer a dropdown -->
                                                     <select name="status" class="form-control">
                                                         <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
