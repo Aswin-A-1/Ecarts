@@ -34,12 +34,18 @@ router.get("/logout", controller.getLogout);
 router.post("/login", controller.postLogin);
 router.get("/usermanagement", checkSession, controller.getUserManagement);
 router.get("/categorymanagement", checkSession, controller.getCategoryManagement);
+router.get("/couponmanagement", checkSession, controller.getCouponManagement);
 router.get("/blockuser/:id", controller.getBlockUser);
 router.get("/addcategory", checkSession, controller.getCategory);
+router.get("/addcoupon", checkSession, controller.getCoupon);
 router.get("/deletecategory/:id", controller.getDeleteCategory);
+router.get("/deletecoupon/:id", controller.getDeleteCoupon);
 router.get("/editcategory/:id", checkSession, controller.getEditCategory);
+router.get("/editcoupon/:id", checkSession, controller.getEditCoupon);
 router.post("/addcategory/:id", controller.postEditCategory);
 router.post("/addcategory", controller.postCategory);
+router.post("/addcoupen/:id", controller.postEditCoupen);
+router.post("/addcoupen", controller.postCoupen);
 router.get("/unlistproduct/:id", controller.getUnlistProduct);
 
 module.exports = router;

@@ -27,4 +27,26 @@ module.exports = {
       }
     },
 
+    getUserCancelOrder: async (req, res) => {
+      try {
+        const orderid = req.params.id;
+        await Order.updateOne({ _id: orderid }, { status: "Cancelled" });
+        res.redirect("/orders");
+      } catch (err) {
+        console.error(err);
+        return res.status(500).send("Internal Server Error");
+      }
+    },
+
+    getAdminCancelOrder: async (req, res) => {
+      try {
+        const orderid = req.params.id;
+        await Order.updateOne({ _id: orderid }, { status: "Cancelled" });
+        res.redirect("/order/ordermanagement");
+      } catch (err) {
+        console.error(err);
+        return res.status(500).send("Internal Server Error");
+      }
+    },
+
 }

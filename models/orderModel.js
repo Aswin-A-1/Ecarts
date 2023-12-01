@@ -16,11 +16,20 @@ const orderSchema = new mongoose.Schema({
     price: {
         type: Number,
     },
+    discount: {
+        type: Number,
+    },
     quantity: {
         type: Number,
     },
     addressid: {
         type: mongoose.Schema.Types.ObjectId,
+    },
+    paymentmethord: {
+        type: String,
+    },
+    razorpaypaymentid: {
+        type: String,
     },
     orderdate: {
         type: Date,

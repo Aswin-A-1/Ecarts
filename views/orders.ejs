@@ -122,7 +122,9 @@
                                             <td>
                                                 <!-- <a href="/cancelorder/<%= order._id %>"
                                                     class="btn btn-danger">Cancel</a> -->
-                                                    <button onclick="openConfirmCancelModal('/cancelorder/<%= order._id %>')" class="btn btn-danger">Cancel</button>
+                                                    <% if (order.status !== 'Delivered' && order.status !== 'Cancelled') { %>
+                                                    <button onclick="openConfirmCancelModal('/order/usercancelorder/<%= order._id %>')" class="btn btn-danger">Cancel</button>
+                                                    <% } %>
                                             </td>
                                         </tr>
                                         <% }); %>

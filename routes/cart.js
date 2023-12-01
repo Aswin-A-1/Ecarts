@@ -33,5 +33,6 @@ router.get('/addcartquantity/:id', controller.getAddQuantity)
 router.get('/subcartquantity/:id', controller.getSubQuantity)
 router.get('/checkout', checkSessionAndBlocked, controller.getCheckOut)
 router.post('/placeorder', controller.postPlaceOrder)
+router.post('/applycoupon', controller.postApplyCoupon)
 
 module.exports = router;

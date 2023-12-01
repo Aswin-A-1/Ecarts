@@ -8,10 +8,14 @@ const adminRoute = require('./routes/admin')
 const cartRoute = require('./routes/cart')
 const productRoute = require('./routes/product')
 const orderRoute = require('./routes/order')
+const paymentRoute = require('./routes/payment')
+const wishlistRoute = require('./routes/wishlist')
 const session = require("express-session")
 const crypto = require('crypto')
 const mongoURI = 'mongodb://127.0.0.1:27017/ecartdb'
 const secret = crypto.randomBytes(32).toString('hex')
+
+app.use(express.json());
 app.use(
     session({
       secret: secret,
@@ -45,6 +49,8 @@ app.use('/admin', adminRoute)
 app.use('/cart', cartRoute)
 app.use('/products', productRoute)
 app.use('/order', orderRoute)
+app.use('/payment', paymentRoute)
+app.use('/wishlist', wishlistRoute)
 
 
 app.listen(3000, () => {
