@@ -60,6 +60,11 @@
                             </a>
                         </li>
                         <li class="nav-item mt-4">
+                            <a class="nav-link text-dark" href="/wallet">
+                                Wallet
+                            </a>
+                        </li>
+                        <li class="nav-item mt-4">
                             <a class="nav-link text-dark" href="/userhome">
                                 E-Cart
                             </a>
@@ -84,6 +89,7 @@
                                 <h5>Basic Details</h5>
                                 <p><strong>Name:</strong>  <%= user.username %></p>
                                 <p><strong>Email:</strong>  <%= user.email %></p>
+                                <p><strong>Wallet:</strong> ₹ <%= user.wallet %></p>
                                 <!-- <p><strong>Phone:</strong> +1234567890</p> -->
                             </div>
                             <!-- <div class="col-md-6">

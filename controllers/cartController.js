@@ -4,6 +4,8 @@ const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 const Address = require("../models/addressModel");
 const Coupon = require("../models/coupenModel");
+const Wishlist = require("../models/wishlistModel");
+const Wallet = require("../models/walletModel");
 
 module.exports = {
   getCart: async (req, res) => {
@@ -12,6 +14,36 @@ module.exports = {
   },
 
   getAddCart: async (req, res) => {
+    const userId = req.session.userId;
+    const productId = req.params.id;
+    const cart = await Cart.findOne({ userid: userId, productid: productId });
+    if (cart != null) {
+      const product = await Product.findById(cart.productid);
+      if (product.stock > cart.quantity) {
+        cart.quantity++;
+        cart.save();
+      }
+      const productData = await Product.findOne({ _id: productId });
+      res.redirect("/cart");
+    } else {
+      const userData = await User.findOne({ _id: userId });
+      const productData = await Product.findOne({ _id: productId });
+      const newCart = new Cart({
+        userid: userData._id,
+        user: userData.username,
+        productid: productData._id,
+        product: productData.productname,
+        price: productData.price,
+        quantity: 1,
+        image: productData.image[0],
+      });
+
+      newCart.save();
+      res.redirect("/cart");
+    }
+  },
+
+  getAddCartFromWishlist: async (req, res) => {
     const userId = req.session.userId;
     const productId = req.params.id;
     const cart = await Cart.findOne({ userid: userId, productid: productId });
@@ -34,6 +66,7 @@ module.exports = {
       });
 
       newCart.save();
+      await Wishlist.findOneAndDelete({ productid: productId });
       res.redirect("/cart");
     }
   },
@@ -47,9 +80,14 @@ module.exports = {
   getAddQuantity: async (req, res) => {
     const productId = req.params.id;
     const cart = await Cart.findOne({ _id: productId });
-    cart.quantity++;
-    cart.save();
-    res.json({ updatedQuantity: cart.quantity });
+    const product = await Product.findById(cart.productid);
+    if (product.stock > cart.quantity) {
+      cart.quantity++;
+      cart.save();
+      res.json({ updatedQuantity: cart.quantity });
+    } else {
+      res.json({ message: "Maximum stock reached" });
+    }
   },
 
   getSubQuantity: async (req, res) => {
@@ -65,15 +103,28 @@ module.exports = {
   },
 
   getCheckOut: async (req, res) => {
+    const userData = await User.findOne({ _id: req.session.userId });
     const cart = await Cart.find({ userid: req.session.userId });
     const addresses = await Address.find({ userid: req.session.userId });
-    res.render("checkout", { userid: req.session.userId, cart, addresses });
+    res.render("checkout", {
+      userid: req.session.userId,
+      cart,
+      addresses,
+      userData,
+    });
   },
 
   postPlaceOrder: async (req, res) => {
     const cart = await Cart.find({ userid: req.session.userId });
     const currentDate = new Date();
     const discountAmount = parseFloat(req.body.discountprice);
+    const address = await Address.findById(req.body.address)
+    let totalAmount = 0;
+    for (const item of cart) {
+      totalAmount += item.price * item.quantity;
+    }
+
+    const totalAfterDiscount = totalAmount - discountAmount;
     for (const item of cart) {
       const newOrder = new Order({
         userid: item.userid,
@@ -83,7 +134,7 @@ module.exports = {
         price: item.price,
         discount: discountAmount,
         quantity: item.quantity,
-        addressid: req.body.address,
+        addressid: address,
         paymentmethord: req.body.payment,
         orderdate: currentDate,
         status: "pending",
@@ -94,6 +145,24 @@ module.exports = {
         { _id: item.productid },
         { $inc: { stock: -item.quantity } }
       );
+    }
+    if (req.body.payment == "Wallet") {
+      await User.updateOne(
+        { _id: req.session.userId },
+        { $inc: { wallet: -totalAfterDiscount } }
+      );
+      let total = 0
+      for (const item of cart) {
+        total += item.price * item.quantity
+      }
+      total = total - discountAmount
+      const newWallet = new Wallet({
+        userid: req.session.userId,
+        date: currentDate,
+        amount: total,
+        creditordebit: 'debit',
+      });
+      newWallet.save();
     }
     await Cart.deleteMany({ userid: req.session.userId });
     res.render("orderconfirm");
@@ -181,7 +250,7 @@ module.exports = {
       });
     } catch (error) {
       console.error(error);
-      res.status(500).send("Internal Server Error");
+      res.status(500).send("Failed to create order.");
     }
   },
 };

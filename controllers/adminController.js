@@ -18,7 +18,7 @@ module.exports = {
       }
     } catch (err) {
       console.error("Error in getLogout:", err);
-      res.status(500).send("Internal Server Error");
+      res.status(500).send("Error occurred during login. Please try again.");
     }
   },
 
@@ -49,7 +49,7 @@ module.exports = {
       });
     } catch (err) {
       console.error("Error in getLogout:", err);
-      res.status(500).send("Internal Server Error");
+      res.status(500).send("Error occurred during logout. Please try again.");
     }
   },
 
@@ -59,7 +59,7 @@ module.exports = {
       res.render("usermanagement", { users });
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to fetch user data. Please try again.");
     }
   },
 
@@ -69,7 +69,7 @@ module.exports = {
       res.render("categorymanagement", { categories });
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to fetch categories. Please try again.");
     }
   },
 
@@ -79,7 +79,7 @@ module.exports = {
       res.render("coupenmanagement", { coupons });
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to fetch coupons. Please try again.");
     }
   },
 
@@ -91,7 +91,7 @@ module.exports = {
       res.redirect("/admin/usermanagement");
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to block user.");
     }
   },
 
@@ -100,7 +100,7 @@ module.exports = {
       res.render("addcategory");
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to get category edit page.");
     }
   },
 
@@ -109,7 +109,7 @@ module.exports = {
       res.render("addcoupen");
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to get addcoupon page.");
     }
   },
 
@@ -120,7 +120,7 @@ module.exports = {
       res.redirect("/admin/categorymanagement");
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to delete coupon.");
     }
   },
 
@@ -131,7 +131,7 @@ module.exports = {
       res.redirect("/admin/couponmanagement");
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to delete coupon");
     }
   },
 
@@ -142,7 +142,7 @@ module.exports = {
       res.render("editcategory", { category: category });
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to display the category edit page.");
     }
   },
 
@@ -153,7 +153,7 @@ module.exports = {
       res.render("editcoupon", { coupon: coupon });
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to display the coupon edit page.");
     }
   },
 
@@ -167,7 +167,7 @@ module.exports = {
       );
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Error updating category");
+      return res.status(500).send("Failed to edit category.");
     }
     res.redirect("/admin/categorymanagement");
   },
@@ -182,7 +182,7 @@ module.exports = {
       );
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Error updating category");
+      return res.status(500).send("Failed to edit coupen.");
     }
     res.redirect("/admin/couponmanagement");
   },

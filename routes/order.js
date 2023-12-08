@@ -53,6 +53,7 @@ const checkSession = async (req, res, next) => {
 router.get("/ordermanagement", checkSession, controller.getOrderManagement);
 router.post("/ordrstatus/:id", upload, controller.postUpdateOrderstatus);
 router.get("/usercancelorder/:id", controller.getUserCancelOrder);
+router.get("/userreturnorder/:id", controller.getUserReturnOrder);
 router.get("/admincancelorder/:id", controller.getAdminCancelOrder);
 
 module.exports = router;

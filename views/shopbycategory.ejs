@@ -3,12 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Your E-Commerce Store</title>
+    <title>E-Cart</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/css/style.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> -->
     <style>
         .input-group {
             position: relative;
@@ -80,43 +79,126 @@
         </ul>
     </nav>
 
-    <div class="container mt-5 mb-5 pb-5">
-        <div class="row">
-            <div class="col-md-1">
-                <!-- Thumbnail images -->
-                <% product.image.forEach((image, index)=> { %>
-                    <div style="width: 50px; height: 50px;" class="mb-5">
-                        <img src="/static/<%= product.image[index] %>" alt="<%= product.productname %>"
-                            class="img-fluid thumbnail-img" data-index="<%= index %>">
+    <br>
+    <br>
+    <div class="pl-5">
+        <h2 id="heading">
+            <%= categoryName %>
+        </h2>
+    </div>
+    <br>
+
+
+    <!-- <header class="navbar navbar-expand-lg navbar-light bg-primary">
+        <a class="navbar-brand text-light" href="#">E-Cart</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <input class="form-control mr-sm-2 ml-auto col-md-4" type="search" placeholder="Search Product"
+                aria-label="Search">
+            <button class="btn btn-light" type="submit">Search</button>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link text-light" href="/cart">Cart</a></li>
+                <li class="nav-item"><a class="nav-link text-light" href="/wishlist">Wishlist</a></li>
+                <li class="nav-item"><a class="nav-link text-light" href="/userprofile/<%= userId %>">Account</a></li>
+                <li class="nav-item"><a class="nav-link text-light" href="/logout">Logout</a></li>
+
+                <li class="nav-item"><a class="nav-link text-light" href="/cart"><i class="fas fa-shopping-cart"></i> Cart</a></li>
+                <li class="nav-item"><a class="nav-link text-light" href="#"><i class="fas fa-heart"></i> Wishlist</a></li>
+                <li class="nav-item"><a class="nav-link text-light" href="/userprofile/<%= userId %>"><i class="fas fa-user"></i> Account</a></li>
+                <li class="nav-item"><a class="nav-link text-light" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
+    </header> -->
+
+
+    <div class="container productsdiv" id="carddiv">
+        <div class="row d-flex justify-content-around productscontainer" id="productscontainer">
+
+            <% if(products.length> 0) { %>
+                <% products.forEach(product=> { %>
+                    <div class="col-md-3">
+                        <div class="card mb-3 position-relative">
+
+                            <div class="col-md-10 mx-auto mt-2 ">
+                                <img style="max-height: 200px; max-width: 200px;" src="/static/<%= product.image[0] %>"
+                                    class="card-img-top" alt="Product 1">
+                            </div>
+                            <div class="card-body">
+                                <div style="height: 50px;">
+                                    <h5 class="card-title">
+                                        <%= product.productname %>
+                                    </h5>
+                                </div>
+
+                                <p class="card-text">Price: ₹ <%= product.price %>
+                                </p>
+                                <div class="d-flex justify-content-between mt-2"> <!-- Use flexbox for alignment -->
+                                    <a href="/product/<%= product._id %>" class="btn btn-primary">View</a>
+                                    <button class="btn btn-link wishlist-btn"
+                                        onclick="toggleWishlist('<%= product._id %>')">
+                                        <% if(wishlistProducts.some(wishlistProduct=>
+                                            wishlistProduct._id.equals(product._id))) { %>
+                                            <i class="fa-solid fa-heart" id="fa-heart<%= product._id %>"></i>
+                                            <% } else { %>
+                                                <i class="fa-regular fa-heart" id="fa-heart<%= product._id %>"></i>
+                                                <% } %>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <% }); %>
-            </div>
-            <div class="col-md-4" style="width: 300px; height: 400px; overflow: hidden;">
-                <img src="/static/<%= product.image[0] %>" alt="<%= product.productname %>" class="img-fluid big_img"
-                    style="width: auto; height: auto; max-width: 100%; max-height: 100%;">
-            </div>
-            <div class="col-md-6">
-                <h1>
-                    <%= product.productname %>
-                </h1>
-                <p>Price: ₹ <%= product.price %>
-                </p>
-                <p>
-                    <%= product.description %>
-                </p>
-                </p>
-                <div class="row ml-1">
-                    <a href="/cart/addtocart/<%= product._id %>" class="btn btn-primary" id="addToCart">Add to Cart</a>
-                    <a href="#" class="btn btn-warning ml-2 text-light" id="buyNow">Buy Now</a>
-                </div>
-            </div>
+                        <% } else { %>
+                            <div class="col">
+                                <h1 class="text-center">No products!</h1><br><br><br><br><br><br><br><br><br><br><br>
+                            </div>
+                            <% } %>
         </div>
     </div>
 
+    <br>
+
+
+
+
+
 
     <%- include('footer') %>
-    <script>
-        function handleClickOutside(event) {
+
+        <script>
+
+            function toggleWishlist(productid) {
+                const icon = document.getElementById(`fa-heart${productid}`);
+                if (icon && icon.classList.contains('fa-regular')) {
+                    fetch(`/wishlist/addtowishlist/${productid}`)
+                        .then(() => {
+                            icon.classList.remove('fa-regular');
+                            icon.classList.add('fa-solid');
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+
+                    // icon.style.color = '#ff291a';
+                    // Logic to handle adding the product to the wishlist...
+                } else if (icon) {
+                    fetch(`/wishlist/removefromwishlist/${productid}`)
+                        .then(() => {
+                            icon.classList.remove('fa-solid');
+                            icon.classList.add('fa-regular');
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+
+                    // Logic to handle removing the product from the wishlist...
+                }
+            }
+
+            function handleClickOutside(event) {
                 const suggestionsContainer = document.getElementById('suggestions-container');
                 const searchInput = document.getElementById('search');
 
@@ -219,37 +301,10 @@
                         console.error('Error:', error);
                     });
             }
-    </script>
-        <script type="text/javascript">
-            $(document).ready(function () {
-                $('.big_img').imagezoomsl({
-                    zoomrange: [3, 3]
-                });
-            })
-
-            // Define the 'product' variable here by converting it to a JSON string
-            const product = <% - JSON.stringify(product) %>;
-
-            // Now you can use the 'product' variable within this script
-            document.addEventListener("DOMContentLoaded", function () {
-                const thumbnails = document.querySelectorAll('.thumbnail-img');
-                const mainImage = document.querySelector('.big_img'); // Changed to querySelector
-
-                thumbnails.forEach(thumbnail => {
-                    thumbnail.addEventListener('click', function () {
-                        const dataIndex = this.getAttribute('data-index');
-                        const newImageSrc = "/static/" + product.image[dataIndex]; // Adjusted image source
-                        mainImage.src = newImageSrc;
-                    });
-                });
-            });
-
-            
-
         </script>
-        <script src="/static/js/zoomsl.js" type="text/javascript"></script>
-        <script src="/static/js/zoomsl.min.js"></script>
 
+
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>

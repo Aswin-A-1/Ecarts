@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    wallet: {
+        type: Number,
+        required: true,
+    },
     isBlocked: {
         type: Boolean,
         required: true,

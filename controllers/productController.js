@@ -13,7 +13,7 @@ module.exports = {
       res.render("addproduct", { categories });
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Error getting addproduct page");
     }
   },
 
@@ -24,7 +24,7 @@ module.exports = {
       res.render("productmanagement", { products });
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to get products. please try again");
     }
   },
 
@@ -37,7 +37,6 @@ module.exports = {
       price: price,
       model: model,
       description: discription,
-      rating: rating,
       image: req.files.map((file) => file.path.substring(6)),
       stock: stock,
       isListed: true,
@@ -56,7 +55,7 @@ module.exports = {
       res.render("editproduct", { product, categories });
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to get product edit page.");
     }
   },
 
@@ -69,7 +68,6 @@ module.exports = {
       price,
       model,
       description,
-      rating,
       stock,
       isListed,
     } = req.body;

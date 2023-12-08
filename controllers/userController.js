@@ -2,6 +2,9 @@ const User = require("../models/userModel");
 const Product = require("../models/productModel");
 const Address = require("../models/addressModel");
 const Order = require("../models/orderModel");
+const Category = require("../models/categoryModel");
+const Wsihlist = require("../models/wishlistModel");
+const Wallet = require("../models/walletModel");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
@@ -28,17 +31,18 @@ module.exports = {
       });
     } catch (err) {
       console.error("Error in getLogout:", err);
-      res.status(500).send("Internal Server Error");
+      res.status(500).send("Error occurred during login. Please try again.");
     }
   },
 
   postLogin: async (req, res) => {
     const { email, password } = req.body;
-    console.log('changed login')
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const passwordPattern = /^.{8,}$/;
     if (!emailPattern.test(email) || !passwordPattern.test(password)) {
-      res.render("userlogin", { message: "Email and password should be valid!" });
+      res.render("userlogin", {
+        message: "Email and password should be valid!",
+      });
     } else {
       try {
         const user = await User.findOne({ email: email });
@@ -65,7 +69,7 @@ module.exports = {
         }
       } catch (err) {
         console.error(err);
-        return res.status(500).send("Internal Server Error");
+        return res.status(500).send("Error in login.");
       }
     }
   },
@@ -77,20 +81,26 @@ module.exports = {
         isListed: true,
         stock: { $gt: 0 },
       });
-      res.render("userhome", { products, userId });
+      const wishlistItems = await Wsihlist.find({ userid: req.session.userId });
+      const wishlistProductIds = wishlistItems.map((item) => item.productid);
+
+      const wishlistProducts = await Product.find({
+        _id: { $in: wishlistProductIds },
+      }).select('productname');
+      res.render("userhome", { products, userId, wishlistProducts });
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to get homepage. Please try again.");
     }
   },
 
   getProduct: async (req, res) => {
     try {
       const product = await Product.findOne({ _id: req.params.id });
-      res.render("product", { product });
+      res.render("product", { product, userId: req.session.userId });
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to get productpage.");
     }
   },
 
@@ -100,7 +110,7 @@ module.exports = {
       res.render("userregistration", { otpSent });
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Internal Server Error");
+      return res.status(500).send("Failed to get registratiion.");
     }
   },
 
@@ -243,6 +253,7 @@ module.exports = {
         username: userData.username,
         email: userData.email,
         password: userData.password,
+        wallet: 0,
         isBlocked: false,
       });
 
@@ -372,6 +383,17 @@ module.exports = {
     }
   },
 
+  getWallet: async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const user = await User.findOne({ _id: userId });
+      const wallethistory = await Wallet.find({ userid: userId })
+      res.render("wallet", { user, userId, wallethistory });
+    } catch (err) {
+      console.log(err);
+    }
+  },
+
   getAddAddress: async (req, res) => {
     try {
       res.render("addaddress");
@@ -450,7 +472,7 @@ module.exports = {
       const orders = await Order.find({ userid: userId });
       res.render("orders", { user, userId, orders });
     } catch (err) {
-      console.log(err);
+      cconsole.log("Error getting orders: ", err);
     }
   },
 
@@ -460,7 +482,118 @@ module.exports = {
       await Order.findByIdAndDelete(orderId);
       res.redirect("/orders");
     } catch (err) {
+      console.log("Error in canceling orders: ", err);
+    }
+  },
+
+  getSearch: async (req, res) => {
+    // try {
+    //   const searchQuery = req.query.search;
+    //   let filter = {};
+
+    //   if (searchQuery) {
+    //     const regexPattern = new RegExp(searchQuery, "i");
+    //     filter = { productname: { $regex: regexPattern } };
+    //     const filteredProducts = await Product.find(filter);
+    //     res.json(filteredProducts);
+    //   } else {
+    //     const firstFourProducts = await Product.find({}).limit(4);
+    //     res.json(firstFourProducts);
+    //   }
+    // } catch (err) {
+    //   console.log(err);
+    //   res.status(500).json({ error: "Internal Server Error" });
+    // }
+    try {
+      const searchQuery = req.query.search;
+      let productFilter = {};
+      let categoryFilter = {};
+
+      if (searchQuery) {
+        const regexPattern = new RegExp(searchQuery, "i");
+
+        // Find products matching the query
+        productFilter = { productname: { $regex: regexPattern } };
+
+        // Find categories matching the query
+        categoryFilter = { category: { $regex: regexPattern } };
+      }
+
+      const matchingProducts = await Product.find(productFilter).populate(
+        "category"
+      );
+      const matchingCategories = await Category.find(categoryFilter);
+      const response = {
+        products: matchingProducts,
+        categories: matchingCategories,
+      };
+
+      res.json(response);
+    } catch (err) {
       console.log(err);
+      res.status(500).json({ error: "Error while searaching." });
+    }
+  },
+
+  getShop: async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const productsByCategory = await Product.aggregate([
+        {
+          $match: { isListed: true, stock: { $gt: 0 } },
+        },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "category",
+            foreignField: "_id",
+            as: "categoryInfo",
+          },
+        },
+        {
+          $unwind: "$categoryInfo",
+        },
+        {
+          $group: {
+            _id: "$categoryInfo.category",
+            products: {
+              $push: "$$ROOT",
+            },
+          },
+        },
+      ]);
+      const products = await Product.find({
+        isListed: true,
+        stock: { $gt: 0 },
+      });
+      const wishlistItems = await Wsihlist.find({ userid: req.session.userId });
+      const wishlistProductIds = wishlistItems.map((item) => item.productid);
+
+      const wishlistProducts = await Product.find({
+        _id: { $in: wishlistProductIds },
+      }).select('productname');
+      res.render("shop", { products, productsByCategory, userId, wishlistProducts });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Error getting shop.");
+    }
+  },
+  getShopByCategory: async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const categoryName = req.params.category;
+      const category = await Category.findOne({ category: categoryName });
+      const products = await Product.find({ category: category._id });
+      const wishlistItems = await Wsihlist.find({ userid: req.session.userId });
+      const wishlistProductIds = wishlistItems.map((item) => item.productid);
+
+      const wishlistProducts = await Product.find({
+        _id: { $in: wishlistProductIds },
+      }).select('productname');
+      res.render("shopbycategory", { products, userId, categoryName, wishlistProducts });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Error getting shop by category.");
     }
   },
 };

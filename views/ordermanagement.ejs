@@ -17,6 +17,7 @@
 
         .maindiv{
             height: 86vh;
+            overflow-y: scroll;
         }
 
         #sidebar a.nav-link:hover {
@@ -118,6 +119,8 @@
                                                                 <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
                                                                 <!-- Add other status options -->
                                                             </select>
+                                                        <% } else if(order.status === 'Returned') { %>
+                                                            Returned
                                                             <% } else { %>
                                                     <select name="status" class="form-control">
                                                         <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
@@ -143,7 +146,7 @@
                                             <td>
                                                 <!-- <a href="/cancelorder/<%= order._id %>"
                                                     class="btn btn-primary">Update</a> -->
-                                                    <% if (order.status !== 'Delivered' && order.status !== 'Cancelled') { %>
+                                                    <% if (order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Returned') { %>
                                                     <button type="submit" class="btn btn-primary mt-2">Update</button>
                                                     <a href="/order/admincancelorder/<%= order._id %>" class="btn btn-danger">Cancel</a>
                                                     <!-- <button onclick="openConfirmCancelModal('/order/admincancelorder/<%= order._id %>')" class="btn btn-danger">Cancel</button> -->

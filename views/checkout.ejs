@@ -48,6 +48,9 @@
                                     </div>
                                     <p id="couponMessage" class="text-danger"></p>
                                     <p id="couponSuccessMessage" class="text-primary"></p>
+                                    <p id="walletbalence" wallet-amount=<%=userData.wallet %> ><strong>Wallet Balance
+                                            :</strong> ₹ <%= userData.wallet %>
+                                    </p>
             </div>
             <div class="col-md-6">
                 <form action="/cart/placeorder" method="POST">
@@ -90,6 +93,7 @@
                                                         <select class="form-control" id="payment" name="payment">
                                                             <option value="COD">Cash On Delivery</option>
                                                             <option value="Razorpay">Net Banking</option>
+                                                            <option value="Wallet">Wallet</option>
                                                             <!-- Add more options as needed -->
                                                         </select>
                                                     </div>
@@ -100,22 +104,39 @@
                                                     <button type="button" class="btn btn-primary btn-block"
                                                         id="payNowButton">Pay Now</button>
                                                     <% } %>
+                                                    <p id="insufficientBalenceMessage" class="text-danger"></p>
                 </form>
             </div>
         </div>
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
+                const wallet = document.getElementById('walletbalence');
+                const walletamount = wallet.getAttribute('wallet-amount');
+                const total = document.getElementById('totalData');
+                const totalamount = total.getAttribute('data-total-price');
                 const paymentSelect = document.getElementById('payment');
                 const orderButton = document.getElementById('orderButton');
                 const payNowButton = document.getElementById('payNowButton');
+                const insufficientBalenceMessage = document.getElementById('insufficientBalenceMessage');
                 const form = document.querySelector('form'); // Select the form
 
                 function toggleButtons(selectedPayment) {
                     if (selectedPayment === 'COD') {
+                        insufficientBalenceMessage.innerHTML = ''
                         orderButton.style.display = 'block';
                         payNowButton.style.display = 'none';
+                    } else if (selectedPayment === 'Wallet') {
+                        if (parseInt(walletamount) >= parseInt(totalamount)) {
+                            orderButton.style.display = 'block';
+                            payNowButton.style.display = 'none';
+                        } else {
+                            orderButton.style.display = 'none';
+                            payNowButton.style.display = 'none';
+                            insufficientBalenceMessage.innerHTML = `Insufficient Balance`
+                        }
                     } else {
+                        insufficientBalenceMessage.innerHTML = ''
                         orderButton.style.display = 'none';
                         payNowButton.style.display = 'block';
                     }
@@ -152,7 +173,7 @@
                             "Content-Type": "application/json"
                         },
                         "data": JSON.stringify({
-                            "amount": totoal * 100 // Amount for the order (in INR)
+                            "amount": totoal * 100 // Amount for the order (in INR) 
                         }),
                     };
 
@@ -206,7 +227,7 @@
                     var discountInput = document.createElement('input');
                     discountInput.type = 'hidden';
                     discountInput.name = 'discountprice';
-                    discountInput.value =  couponDiscount;
+                    discountInput.value = couponDiscount;
 
                     form.appendChild(discountInput);
 

@@ -28,6 +28,7 @@ const checkSessionAndBlocked = async (req, res, next) => {
 
 router.get('/', checkSessionAndBlocked, controller.getCart)
 router.get('/addtocart/:id', controller.getAddCart)
+router.get('/addtocartfromwishlist/:id', controller.getAddCartFromWishlist)
 router.get('/removefromcart/:id', controller.getRemoveCart)
 router.get('/addcartquantity/:id', controller.getAddQuantity)
 router.get('/subcartquantity/:id', controller.getSubQuantity)

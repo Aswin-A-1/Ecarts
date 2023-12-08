@@ -23,7 +23,7 @@ const orderSchema = new mongoose.Schema({
         type: Number,
     },
     addressid: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Object,
     },
     paymentmethord: {
         type: String,

@@ -27,5 +27,7 @@ const checkSessionAndBlocked = async (req, res, next) => {
   };
 
 router.get('/', checkSessionAndBlocked, controller.getWishlist)
+router.get('/addtowishlist/:id', controller.addToWishlist)
+router.get('/removefromwishlist/:id', controller.removeFromWishlist)
 
 module.exports = router;

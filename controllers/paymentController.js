@@ -107,7 +107,7 @@ module.exports = {
         });
       } catch (error) {
         console.error(error);
-        res.status(500).send("Internal Server Error");
+        res.status(500).send("Error creating razorpay order.");
       }
     },
 
