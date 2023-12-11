@@ -90,7 +90,7 @@
                                 <tr>
                                     <th>Product</th>
                                     <th>Quantity</th>
-                                    <th>Total Amount</th>
+                                    <th>Amount with discount</th>
                                     <th>Status</th>
                                     <th>Order Date</th>
                                     <th>Action</th>
@@ -99,19 +99,21 @@
                             <tbody id="userTableBody">
                                 <% if(orders.length> 0) { %>
                                     <% orders.forEach( order => { %>
+                                        <% order.products.forEach( product=> { %>
                                         <tr>
                                             <td>
-                                                <%= order.product %>
+                                                <%= product.product %>
                                             </td>
                                             <td>
-                                                <%= order.quantity %>
+                                                <%= product.quantity %>
                                             </td>
                                             <td>
-                                                <% let total = order.price * order.quantity %>
-                                                <%= total %>
+                                                <% let total=(product.price * product.quantity) - product.discount
+                                                        %>
+                                                        <%= total %>
                                             </td>
                                             <td>
-                                                <%= order.status %>
+                                                <%= product.status %>
                                             </td>
                                             <td>
                                                 <% 
@@ -128,14 +130,15 @@
                                             <td>
                                                 <!-- <a href="/cancelorder/<%= order._id %>"
                                                     class="btn btn-danger">Cancel</a> -->
-                                                    <% if (order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Returned') { %>
-                                                    <button onclick="openConfirmCancelModal('/order/usercancelorder/<%= order._id %>')" class="btn btn-danger">Cancel</button>
+                                                    <% if (product.status !== 'Delivered' && product.status !== 'Cancelled' && product.status !== 'Returned') { %>
+                                                    <button onclick="openConfirmCancelModal('/order/usercancelorder/<%= order._id %>/<%= product.productid %>')" class="btn btn-danger">Cancel</button>
                                                     <% } %>
-                                                    <% if (order.status == 'Delivered') { %>
-                                                    <button onclick="openConfirmReturnModal('/order/userreturnorder/<%= order._id %>')" class="btn btn-danger">Return</button>
+                                                    <% if (product.status == 'Delivered') { %>
+                                                    <button onclick="openConfirmReturnModal('/order/userreturnorder/<%= order._id %>/<%= product.productid %>')" class="btn btn-danger">Return</button>
                                                     <% } %>
                                             </td>
                                         </tr>
+                                        <% }); %>
                                         <% }); %>
                                             <% } %>
                             </tbody>

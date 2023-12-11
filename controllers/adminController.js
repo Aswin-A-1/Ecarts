@@ -3,6 +3,7 @@ const Category = require("../models/categoryModel");
 const Product = require("../models/productModel");
 const Order = require("../models/orderModel");
 const Coupon = require("../models/coupenModel");
+const Offer = require("../models/offerModel");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
@@ -83,6 +84,16 @@ module.exports = {
     }
   },
 
+  getOfferManagement: async (req, res) => {
+    try {
+      const offers = await Offer.find();
+      res.render("offermanagement", { offers });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Failed to fetch offers. Please try again.");
+    }
+  },
+
   getBlockUser: async (req, res) => {
     try {
       const user = await User.findOne({ _id: req.params.id });
@@ -113,6 +124,17 @@ module.exports = {
     }
   },
 
+  getOffer: async (req, res) => {
+    try {
+      const products = await Product.find()
+      const categories = await Category.find()
+      res.render("addoffer", { categories, products });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Failed to get addoffer page.");
+    }
+  },
+
   getDeleteCategory: async (req, res) => {
     try {
       const categoryId = req.params.id;
@@ -121,6 +143,28 @@ module.exports = {
     } catch (err) {
       console.error(err);
       return res.status(500).send("Failed to delete coupon.");
+    }
+  },
+
+  getDeleteCoupon: async (req, res) => {
+    try {
+      const couponId = req.params.id;
+      await Coupon.findByIdAndDelete(couponId);
+      res.redirect("/admin/couponmanagement");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Failed to delete coupon");
+    }
+  },
+
+  getDeleteOffer: async (req, res) => {
+    try {
+      const offerId = req.params.id;
+      await Offer.findByIdAndDelete(offerId);
+      res.redirect("/admin/offermanagement");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Failed to delete offer");
     }
   },
 
@@ -225,6 +269,32 @@ module.exports = {
       res.redirect("/admin/couponmanagement");
     } else {
       res.render("addcategory", { message: "Category already exist!" });
+    }
+  },
+
+  postOffer: async (req, res) => {
+    const { product, category, discount, expiryDate } = req.body;
+    const isthere = await Offer.findOne({ $or: [ { applicableProduct: product }, { applicableCategorie: category } ] });
+    if (isthere === null) {
+      try {
+        const newOffer = new Offer({
+          applicableProduct: product,
+          applicableCategorie: category,
+          discount: discount,
+          expiryDate: expiryDate,
+          isActive: true,
+
+        });
+        newOffer.save();
+      } catch (err) {
+        console.error(err);
+        return res.status(500).send("Error inserting offer");
+      }
+      res.redirect("/admin/offermanagement");
+    } else {
+      const products = await Product.find()
+      const categories = await Category.find()
+      res.render("addoffer", { message: "Offer already exist!", products, categories });
     }
   },
 

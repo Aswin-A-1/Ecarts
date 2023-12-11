@@ -1,16 +1,30 @@
 const Cart = require("../models/cartModel");
 const User = require("../models/userModel");
 const Order = require("../models/orderModel");
+const Category = require("../models/categoryModel");
 const Product = require("../models/productModel");
 const Address = require("../models/addressModel");
 const Coupon = require("../models/coupenModel");
 const Wishlist = require("../models/wishlistModel");
 const Wallet = require("../models/walletModel");
+const Offer = require("../models/offerModel");
 
 module.exports = {
   getCart: async (req, res) => {
     const cart = await Cart.find({ userid: req.session.userId });
-    res.render("cart", { cart, userId: req.session.userId });
+    const offersForProducts = [];
+  for (const cartItem of cart) {
+    const product = await Product.findById(cartItem.productid);
+    const category = await Category.findById(product.category);
+
+    const offer = await Offer.findOne({ $or: [ { applicableProduct: product.productname }, { applicableCategorie: category.category } ] });
+
+    offersForProducts.push({
+      cart: cartItem,
+      offer: offer ? offer : null,
+    });
+  }
+    res.render("cart", {  cart,  offers: offersForProducts,  userId: req.session.userId,  });
   },
 
   getAddCart: async (req, res) => {
@@ -106,67 +120,174 @@ module.exports = {
     const userData = await User.findOne({ _id: req.session.userId });
     const cart = await Cart.find({ userid: req.session.userId });
     const addresses = await Address.find({ userid: req.session.userId });
+    const offersForProducts = [];
+  for (const cartItem of cart) {
+    const product = await Product.findById(cartItem.productid);
+    const category = await Category.findById(product.category);
+
+    const offer = await Offer.findOne({ $or: [ { applicableProduct: product.productname }, { applicableCategorie: category.category } ] });
+
+    offersForProducts.push({
+      cart: cartItem,
+      offer: offer ? offer : null,
+    });
+  }
     res.render("checkout", {
       userid: req.session.userId,
       cart,
+      offers: offersForProducts,
       addresses,
       userData,
     });
   },
 
   postPlaceOrder: async (req, res) => {
-    const cart = await Cart.find({ userid: req.session.userId });
-    const currentDate = new Date();
-    const discountAmount = parseFloat(req.body.discountprice);
-    const address = await Address.findById(req.body.address)
-    let totalAmount = 0;
-    for (const item of cart) {
-      totalAmount += item.price * item.quantity;
-    }
+    try {
+      const userData = await User.findOne({ _id: req.session.userId });
+      const cart = await Cart.find({ userid: req.session.userId });
+      const currentDate = new Date();
+      const discountAmount = parseFloat(req.body.discountprice);
+      const address = await Address.findById(req.body.address);
+      let totalAmount = 0;
+      let totalItems = 0;
+      const productsForOrder = [];
 
-    const totalAfterDiscount = totalAmount - discountAmount;
-    for (const item of cart) {
+      for (const item of cart) {
+        totalItems++;
+      }
+
+      const perItemDiscount = Math.floor(discountAmount / totalItems);
+
+      const offersForProducts = [];
+  for (const cartItem of cart) {
+    const product = await Product.findById(cartItem.productid);
+    const category = await Category.findById(product.category);
+
+    const offer = await Offer.findOne({ $or: [ { applicableProduct: product.productname }, { applicableCategorie: category.category } ] });
+
+    offersForProducts.push({
+      cart: cartItem,
+      offer: offer ? offer : null,
+    });
+  }
+
+      for (const offer of offersForProducts) {
+        totalAmount += offer.offer ? (offer.cart.price - (offer.cart.price * (offer.offer.discount / 100))) * offer.cart.quantity : offer.cart.price * offer.cart.quantity;
+        const productForOrder = {
+          productid: offer.cart.productid,
+          product: offer.cart.product,
+          price: offer.offer ? (offer.cart.price - (offer.cart.price * (offer.offer.discount / 100))) : offer.cart.price,
+          discount: perItemDiscount,
+          quantity: offer.cart.quantity,
+          status: "pending",
+        };
+        productsForOrder.push(productForOrder);
+      }
+
+      const totalAfterDiscount = totalAmount - discountAmount;
       const newOrder = new Order({
-        userid: item.userid,
-        user: item.user,
-        productid: item.productid,
-        product: item.product,
-        price: item.price,
-        discount: discountAmount,
-        quantity: item.quantity,
+        userid: req.session.userId,
+        user: userData.username,
+        products: productsForOrder,
         addressid: address,
         paymentmethord: req.body.payment,
         orderdate: currentDate,
-        status: "pending",
       });
 
-      newOrder.save();
-      await Product.updateOne(
-        { _id: item.productid },
-        { $inc: { stock: -item.quantity } }
-      );
-    }
-    if (req.body.payment == "Wallet") {
-      await User.updateOne(
-        { _id: req.session.userId },
-        { $inc: { wallet: -totalAfterDiscount } }
-      );
-      let total = 0
+      await newOrder.save();
+
+      // Update product stock and perform wallet operations as before
       for (const item of cart) {
-        total += item.price * item.quantity
+        await Product.updateOne(
+          { _id: item.productid },
+          { $inc: { stock: -item.quantity } }
+        );
       }
-      total = total - discountAmount
-      const newWallet = new Wallet({
-        userid: req.session.userId,
-        date: currentDate,
-        amount: total,
-        creditordebit: 'debit',
-      });
-      newWallet.save();
+
+      if (req.body.payment === "Wallet") {
+        await User.updateOne(
+          { _id: req.session.userId },
+          { $inc: { wallet: -totalAfterDiscount } }
+        );
+
+        let total = 0;
+        for (const item of cart) {
+          total += item.price * item.quantity;
+        }
+        total = totalAfterDiscount;
+
+        const newWallet = new Wallet({
+          userid: req.session.userId,
+          date: currentDate,
+          amount: total,
+          creditordebit: "debit",
+        });
+        await newWallet.save();
+      }
+
+      await Cart.deleteMany({ userid: req.session.userId });
+      res.render("orderconfirm");
+    } catch (error) {
+      // Handle any potential errors here
+      console.error("Error placing order:", error);
+      res.status(500).send("Failed to place order. Please try again.");
     }
-    await Cart.deleteMany({ userid: req.session.userId });
-    res.render("orderconfirm");
   },
+
+  // old placeorder
+  // postPlaceOrder: async (req, res) => {
+  //   const cart = await Cart.find({ userid: req.session.userId });
+  //   const currentDate = new Date();
+  //   const discountAmount = parseFloat(req.body.discountprice);
+  //   const address = await Address.findById(req.body.address)
+  //   let totalAmount = 0;
+  //   for (const item of cart) {
+  //     totalAmount += item.price * item.quantity;
+  //   }
+
+  //   const totalAfterDiscount = totalAmount - discountAmount;
+  //   for (const item of cart) {
+  //     const newOrder = new Order({
+  //       userid: item.userid,
+  //       user: item.user,
+  //       productid: item.productid,
+  //       product: item.product,
+  //       price: item.price,
+  //       discount: discountAmount,
+  //       quantity: item.quantity,
+  //       addressid: address,
+  //       paymentmethord: req.body.payment,
+  //       orderdate: currentDate,
+  //       status: "pending",
+  //     });
+
+  //     newOrder.save();
+  //     await Product.updateOne(
+  //       { _id: item.productid },
+  //       { $inc: { stock: -item.quantity } }
+  //     );
+  //   }
+  //   if (req.body.payment == "Wallet") {
+  //     await User.updateOne(
+  //       { _id: req.session.userId },
+  //       { $inc: { wallet: -totalAfterDiscount } }
+  //     );
+  //     let total = 0
+  //     for (const item of cart) {
+  //       total += item.price * item.quantity
+  //     }
+  //     total = total - discountAmount
+  //     const newWallet = new Wallet({
+  //       userid: req.session.userId,
+  //       date: currentDate,
+  //       amount: total,
+  //       creditordebit: 'debit',
+  //     });
+  //     newWallet.save();
+  //   }
+  //   await Cart.deleteMany({ userid: req.session.userId });
+  //   res.render("orderconfirm");
+  // },
 
   // postApplyCoupon: async (req, res) => {
   //   const { couponCode } = req.body;

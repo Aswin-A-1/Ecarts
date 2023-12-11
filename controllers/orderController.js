@@ -19,7 +19,8 @@ module.exports = {
   postUpdateOrderstatus: async (req, res) => {
     try {
       const orderid = req.params.id;
-      await Order.updateOne({ _id: orderid }, { status: req.body.status });
+      const productid = req.params.productid;
+      await Order.updateOne({ _id: orderid, 'products.productid': productid }, { $set: { 'products.$.status': req.body.status } });
       res.redirect("/order/ordermanagement");
     } catch (err) {
       console.error(err);
@@ -32,8 +33,45 @@ module.exports = {
       const userid = req.session.userId;
       const orderid = req.params.id;
       const order = await Order.findById(orderid);
-      const refund = order.price * order.quantity - order.discount;
-      await Order.updateOne({ _id: orderid }, { status: "Cancelled" });
+
+      const productid = req.params.productid;
+      await Order.updateOne({ _id: orderid, 'products.productid': productid }, { $set: { 'products.$.status': "Cancelled" } });
+      const product = order.products.find(product => product.productid == productid);
+
+      const refund = product.price * product.quantity - product.discount;
+      if (
+        order.paymentmethord == "Wallet" ||
+        order.paymentmethord == "Razorpay"
+      ) {
+        await User.updateOne({ _id: userid }, { $inc: { wallet: refund } });
+        const currentDate = new Date();
+        const newWallet = new Wallet({
+          userid: req.session.userId,
+          date: currentDate,
+          amount: refund,
+          creditordebit: "credit",
+        });
+        newWallet.save();
+      }
+      await Product.updateOne({ _id: productid }, { $inc: { stock: product.quantity } });
+      res.redirect("/orders");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Failed to cancel order.");
+    }
+  },
+
+  getUserReturnOrder: async (req, res) => {
+    try {
+      const userid = req.session.userId;
+      const orderid = req.params.id;
+      const order = await Order.findById(orderid);
+
+      const productid = req.params.productid;
+      await Order.updateOne({ _id: orderid, 'products.productid': productid }, { $set: { 'products.$.status': "Returned" } });
+      const product = order.products.find(product => product.productid == productid);
+
+      const refund = product.price * product.quantity - product.discount;
       if (
         order.paymentmethord == "Wallet" ||
         order.paymentmethord == "Razorpay"
@@ -51,29 +89,6 @@ module.exports = {
       res.redirect("/orders");
     } catch (err) {
       console.error(err);
-      return res.status(500).send("Failed to cancel order.");
-    }
-  },
-
-  getUserReturnOrder: async (req, res) => {
-    try {
-      const userid = req.session.userId;
-      const orderid = req.params.id;
-      const order = await Order.findById(orderid);
-      const amount = order.price * order.quantity - order.discount;
-      await Order.updateOne({ _id: orderid }, { status: "Returned" });
-      await User.updateOne({ _id: userid }, { $inc: { wallet: amount } });
-      const currentDate = new Date();
-      const newWallet = new Wallet({
-        userid: req.session.userId,
-        date: currentDate,
-        amount: amount,
-        creditordebit: "credit",
-      });
-      newWallet.save();
-      res.redirect("/orders");
-    } catch (err) {
-      console.error(err);
       return res.status(500).send("Failed to return order.");
     }
   },
@@ -83,13 +98,16 @@ module.exports = {
       const userid = req.session.userId;
       const orderid = req.params.id;
       const order = await Order.findById(orderid)
-      await Order.updateOne({ _id: orderid }, { status: "Cancelled" });
-      const refund = order.price * order.quantity - order.discount;
+      const productid = req.params.productid;
+      await Order.updateOne({ _id: orderid, 'products.productid': productid }, { $set: { 'products.$.status': "Cancelled" } });
+      const product = order.products.find(product => product.productid == productid);
+
+      const refund = product.price * product.quantity - product.discount;
+
       if (
         order.paymentmethord == "Wallet" ||
         order.paymentmethord == "Razorpay"
       ) {
-        console.log('refunding')
         await User.updateOne({ _id: userid }, { $inc: { wallet: refund } });
         const currentDate = new Date();
         const newWallet = new Wallet({

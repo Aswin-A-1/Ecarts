@@ -42,6 +42,36 @@
         .suggestion-item:hover {
             background-color: #f8f9fa;
         }
+
+        /* Example CSS for the classes used in the HTML */
+.offer-section {
+  border: 1px solid #ccc;
+  padding: 10px;
+  background-color: #f9f9f9;
+  margin-bottom: 10px;
+}
+
+.no-offer-section {
+  border: 1px solid #ddd;
+  padding: 10px;
+  background-color: #fff;
+  margin-bottom: 10px;
+}
+
+.offer-price {
+  color: #e7923c;
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: #888;
+}
+
+.regular-price {
+  color: #333;
+  font-weight: bold;
+}
+
     </style>
 </head>
 
@@ -99,24 +129,35 @@
                 <h1>
                     <%= product.productname %>
                 </h1>
-                <p>Price: ₹ <%= product.price %>
-                </p>
-                <p>
-                    <%= product.description %>
-                </p>
-                </p>
-                <div class="row ml-1">
-                    <a href="/cart/addtocart/<%= product._id %>" class="btn btn-primary" id="addToCart">Add to Cart</a>
-                    <a href="#" class="btn btn-warning ml-2 text-light" id="buyNow">Buy Now</a>
-                </div>
+                <br>
+                <% if (offer !=null) { %>
+                        <p class="offer-price"><strong>Offer:</strong>
+                            <%= offer.discount %>% Off
+                        </p>
+                        <p><strong>Old price:</strong> <span class="old-price">₹ <%= product.price %></span></p>
+                        <% var offerPrice=product.price - (product.price * (offer.discount / 100)); %>
+                            <p><strong>Offer price:</strong> <span class="offer-price">₹ <%= offerPrice.toFixed(2) %>
+                                        </span></p>
+                    <% } else { %>
+                            <p><strong>Price:</strong> <span class="regular-price">₹ <%= product.price %></span></p>
+                        <% } %>
+                            <p>
+                                <%= product.description %>
+                            </p>
+                            </p>
+                            <div class="row ml-1">
+                                <a href="/cart/addtocart/<%= product._id %>" class="btn btn-primary" id="addToCart">Add
+                                    to Cart</a>
+                                <a href="#" class="btn btn-warning ml-2 text-light" id="buyNow">Buy Now</a>
+                            </div>
             </div>
         </div>
     </div>
-
+    <span id="imggg" data-img="<%= JSON.stringify(product) %>"></span>
 
     <%- include('footer') %>
-    <script>
-        function handleClickOutside(event) {
+        <script>
+            function handleClickOutside(event) {
                 const suggestionsContainer = document.getElementById('suggestions-container');
                 const searchInput = document.getElementById('search');
 
@@ -219,7 +260,7 @@
                         console.error('Error:', error);
                     });
             }
-    </script>
+        </script>
         <script type="text/javascript">
             $(document).ready(function () {
                 $('.big_img').imagezoomsl({
@@ -228,7 +269,10 @@
             })
 
             // Define the 'product' variable here by converting it to a JSON string
-            const product = <% - JSON.stringify(product) %>;
+
+            const img = document.getElementById('imggg');
+            const imgData = img.getAttribute('data-img');
+            const product = JSON.parse(imgData);
 
             // Now you can use the 'product' variable within this script
             document.addEventListener("DOMContentLoaded", function () {
@@ -239,12 +283,14 @@
                     thumbnail.addEventListener('click', function () {
                         const dataIndex = this.getAttribute('data-index');
                         const newImageSrc = "/static/" + product.image[dataIndex]; // Adjusted image source
+                        console.log(mainImage.src)
                         mainImage.src = newImageSrc;
+
                     });
                 });
             });
 
-            
+
 
         </script>
         <script src="/static/js/zoomsl.js" type="text/javascript"></script>

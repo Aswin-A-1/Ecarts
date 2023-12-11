@@ -97,8 +97,14 @@
                                         <h5>
                                             <%= product.product %>
                                         </h5>
-                                        <p><strong>Price:</strong> ₹ <%= product.price %>
-                                        </p>
+                                        <% let offerPrice = 0; %>
+                                        <% const matchingOffer = offers.find(offer => offer.cart.product === product.product && offer.offer !== null); %>
+                                          <% if (matchingOffer) { %>
+                                            <% offerPrice = product.price - (product.price * (matchingOffer.offer.discount / 100)); %>
+                                            <p><strong>Price:</strong> ₹ <%= offerPrice %></p>
+                                          <% } else { %>
+                                          <p><strong>Price:</strong> ₹ <%= product.price %></p>
+                                        <% } %>
                                         <div class="input-group">
                                             <div class="input-group-prepend">
                                                 <p><strong>Quantity: </strong></p>
@@ -108,7 +114,7 @@
                                                     <!-- <button class="btn btn-outline-secondary" type="button"
                                                         id="subtractBtn">-</button> -->
                                                     <button class="btn btn-outline-secondary" id="subtractBtn"
-                                                        onclick="subtractQuantity('<%= product._id %>', '<%= product.price %>', '<%= index %>')">-</button>
+                                                        onclick="subtractQuantity('<%= product._id %>', '<%= (offerPrice > 0) ? offerPrice : product.price %>', '<%= index %>')">-</button>
                                                 </div>
                                                 <input type="number" value="<%= product.quantity %>" min="1" max="10"
                                                     class="form-control quantityInput_<%= index %>"
@@ -117,14 +123,16 @@
                                                     <!-- <a href="/cart/addcartquantity/<%= product._id %>"
                                                         class="btn btn-outline-secondary" id="addBtn">+</a> -->
                                                     <button class="btn btn-outline-secondary" id="addBtn"
-                                                        onclick="addQuantity('<%= product._id %>', '<%= product.price %>', '<%= index %>')">+</button>
+                                                        onclick="addQuantity('<%= product._id %>', '<%= (offerPrice > 0) ? offerPrice : product.price %>', '<%= index %>')">+</button>
                                                 </div>
                                             </div>
                                         </div>
-                                        <p class="text-danger" id="message"></p>
-                                        <p class="mt-2 total_<%= index %>""><strong>Total:</strong> ₹ <%= product.price * product.quantity
-                                                %>
-                                        </p>
+                                        <p class="text-danger" id="message_<%= index %>"></p>
+                                        <% if (offerPrice != 0) { %>
+                                            <p class="mt-2 total_<%= index %>""><strong>Total:</strong> ₹ <%= offerPrice * product.quantity %> </p>
+                                          <% } else { %>
+                                            <p class="mt-2 total_<%= index %>""><strong>Total:</strong> ₹ <%= product.price * product.quantity %> </p>
+                                        <% } %>
                                     </div>
                                     <div class=" col-md-3">
                                             <!-- <button class="btn btn-danger">Remove</button> -->
@@ -147,12 +155,14 @@
                 <div class="col-md-4">
                     <div class="card">
                         <div class="card-body">
-                            <% let totalPrice=0; cart.forEach(cartitem=> {
-                                totalPrice += cartitem.price * cartitem.quantity;
+                            <% let totalPrice=0; offers.forEach(offer=> {
+                                totalPrice += offer.offer ? ((offer.cart.price - (offer.cart.price * (offer.offer.discount / 100))) * offer.cart.quantity) : (offer.cart.price * offer.cart.quantity);
                                 });
                                 %>
-                            <p class="mt-2 total""><strong>Total:</strong> ₹ <span id="subtotal" ><%= totalPrice %></span> </p>
-                            <a href="/cart/checkout" class="btn btn-primary btn-block">Proceed to Checkout</a>
+                                <p class="mt-2 total""><strong>Total:</strong> ₹ <span id="subtotal">
+                                    <%= totalPrice %></span>
+                                </p>
+                                <a href="/cart/checkout" class="btn btn-primary btn-block">Proceed to Checkout</a>
                         </div>
                     </div>
                 </div>
@@ -186,7 +196,7 @@
                         updateQuantityAndTotal(data.updatedQuantity, price, index);
                         addQuantityUpdateTotal(price)
                     } else if (data.message !== undefined) {
-                        message(data.message);
+                        message(data.message, index);
                     }
                 })
                 .catch(error => {
@@ -194,8 +204,8 @@
                 });
         }
 
-        function message(message) {
-            const limitmessage = document.getElementById('message');
+        function message(message, index) {
+            const limitmessage = document.getElementById(`message_${index}`);
             limitmessage.innerHTML = message;
         }
 
@@ -208,6 +218,7 @@
         }
 
         function addQuantityUpdateTotal(price) {
+            console.log('adding')
             const subtotalText = document.getElementById('subtotal').innerText;
             const subtotal = parseInt(subtotalText)
             const priceint = parseInt(price)
@@ -216,7 +227,7 @@
         }
 
         function updateQuantityAndTotal(quantity, price, index) {
-            const limitmessage = document.getElementById('message');
+            const limitmessage = document.getElementById(`message_${index}`);
             limitmessage.innerHTML = '';
 
             const quantityInput = document.querySelector(`.quantityInput_${index}`);

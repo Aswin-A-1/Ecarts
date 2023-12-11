@@ -5,6 +5,7 @@ const Order = require("../models/orderModel");
 const Category = require("../models/categoryModel");
 const Wsihlist = require("../models/wishlistModel");
 const Wallet = require("../models/walletModel");
+const Offer = require("../models/offerModel");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
@@ -97,7 +98,9 @@ module.exports = {
   getProduct: async (req, res) => {
     try {
       const product = await Product.findOne({ _id: req.params.id });
-      res.render("product", { product, userId: req.session.userId });
+      const category = await Category.findOne({ _id: product.category })
+      const offer = await Offer.findOne({ $or: [ { applicableProduct: product.productname }, { applicableCategorie: category.category } ] });
+      res.render("product", { product, offer, userId: req.session.userId });
     } catch (err) {
       console.error(err);
       return res.status(500).send("Failed to get productpage.");

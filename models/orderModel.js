@@ -7,21 +7,29 @@ const orderSchema = new mongoose.Schema({
     user:{
         type: String,
     },
-    productid: {
-        type: mongoose.Schema.Types.ObjectId,
-    },
-    product: {
-        type: String,
-    },
-    price: {
-        type: Number,
-    },
-    discount: {
-        type: Number,
-    },
-    quantity: {
-        type: Number,
-    },
+    products: [
+        {
+            productid: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Product',
+            },
+            product: {
+                type: String,
+            },
+            price: {
+                type: Number,
+            },
+            discount: {
+                type: Number,
+            },
+            quantity: {
+                type: Number,
+            },
+            status: {
+                type: String,
+            },
+        }
+    ],
     addressid: {
         type: Object,
     },
@@ -34,9 +42,50 @@ const orderSchema = new mongoose.Schema({
     orderdate: {
         type: Date,
     },
-    status: {
-        type: String,
-    },
 })
 
 module.exports = mongoose.model('Order', orderSchema)
+
+
+// const mongoose = require('mongoose')
+
+// const orderSchema = new mongoose.Schema({
+//     userid: {
+//         type: mongoose.Schema.Types.ObjectId,
+//     },
+//     user:{
+//         type: String,
+//     },
+//     productid: {
+//         type: mongoose.Schema.Types.ObjectId,
+//     },
+//     product: {
+//         type: String,
+//     },
+//     price: {
+//         type: Number,
+//     },
+//     discount: {
+//         type: Number,
+//     },
+//     quantity: {
+//         type: Number,
+//     },
+//     addressid: {
+//         type: Object,
+//     },
+//     paymentmethord: {
+//         type: String,
+//     },
+//     razorpaypaymentid: {
+//         type: String,
+//     },
+//     orderdate: {
+//         type: Date,
+//     },
+//     status: {
+//         type: String,
+//     },
+// })
+
+// module.exports = mongoose.model('Order', orderSchema)

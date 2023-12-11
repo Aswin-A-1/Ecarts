@@ -62,6 +62,11 @@
                             </a>
                         </li>
                         <li class="nav-item mt-4">
+                            <a class="nav-link text-dark" href="/admin/offermanagement">
+                                Offer Management
+                            </a>
+                        </li>
+                        <li class="nav-item mt-4">
                             <a class="nav-link text-dark" href="/admin/couponmanagement">
                                 Coupon Management
                             </a>
@@ -95,38 +100,39 @@
                             <tbody id="userTableBody">
                                 <% if(orders.length> 0) { %>
                                     <% orders.forEach( order => { %>
+                                    <% order.products.forEach( product => { %>
                                         <tr>
                                             <td>
                                                 <%= order.user %>
                                             </td>
                                             <td>
-                                                <%= order.product %>
+                                                <%= product.product %>
                                             </td>
                                             <td>
-                                                <%= order.quantity %>
+                                                <%= product.quantity %>
                                             </td>
                                             <td>
-                                                <% let total = order.price * order.quantity %>
+                                                <% let total = (product.price * product.quantity) - product.discount %>
                                                 <%= total %>
                                             </td>
                                             <td>
-                                                <form action="/order/ordrstatus/<%= order._id %>" method="POST">
+                                                <form action="/order/ordrstatus/<%= order._id %>/<%= product.productid %>" method="POST">
                                                     <!-- Depending on your system, you might prefer a dropdown -->
-                                                    <% if (order.status === 'Cancelled') { %>
+                                                    <% if (product.status === 'Cancelled') { %>
                                                         Cancelled
-                                                        <% } else if(order.status === 'Delivered') { %>
+                                                        <% } else if(product.status === 'Delivered') { %>
                                                             <select name="status" class="form-control">
-                                                                <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                                                <option value="Delivered" <%= product.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
                                                                 <!-- Add other status options -->
                                                             </select>
-                                                        <% } else if(order.status === 'Returned') { %>
+                                                        <% } else if(product.status === 'Returned') { %>
                                                             Returned
                                                             <% } else { %>
                                                     <select name="status" class="form-control">
-                                                        <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
-                                                        <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
-                                                        <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                                                        <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                                        <option value="Pending" <%= product.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                                                        <option value="Processing" <%= product.status === 'Processing' ? 'selected' : '' %>>Processing</option>
+                                                        <option value="Shipped" <%= product.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                                        <option value="Delivered" <%= product.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
                                                         <!-- Add other status options -->
                                                     </select>
                                                     <% } %>
@@ -146,14 +152,15 @@
                                             <td>
                                                 <!-- <a href="/cancelorder/<%= order._id %>"
                                                     class="btn btn-primary">Update</a> -->
-                                                    <% if (order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Returned') { %>
+                                                    <% if (product.status !== 'Delivered' && product.status !== 'Cancelled' && product.status !== 'Returned') { %>
                                                     <button type="submit" class="btn btn-primary mt-2">Update</button>
-                                                    <a href="/order/admincancelorder/<%= order._id %>" class="btn btn-danger">Cancel</a>
+                                                    <a href="/order/admincancelorder/<%= order._id %>/<%= product.productid %>" class="btn btn-danger">Cancel</a>
                                                     <!-- <button onclick="openConfirmCancelModal('/order/admincancelorder/<%= order._id %>')" class="btn btn-danger">Cancel</button> -->
                                                     <% } %>
                                                 </form>
                                             </td>
                                         </tr>
+                                        <% }); %>
                                         <% }); %>
                                             <% } %>
                             </tbody>

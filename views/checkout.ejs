@@ -21,15 +21,20 @@
                 <h4><strong>Product Details</strong></h4>
                 <% if( cart.length> 0 ) { %>
                     <% cart.forEach( ( cartitem )=> { %>
-                        <p><strong>
-                                <%= cartitem.product %> :
-                            </strong> ₹ <%= cartitem.price %> (Quantity: <%= cartitem.quantity %>)</p>
+                            <% let offerPrice = 0; %>
+                                        <% const matchingOffer = offers.find(offer => offer.cart.product === cartitem.product && offer.offer !== null); %>
+                                          <% if (matchingOffer) { %>
+                                            <% offerPrice = cartitem.price - (cartitem.price * (matchingOffer.offer.discount / 100)); %>
+                                            <p><strong> <%= cartitem.product %> :</strong> ₹ <%= offerPrice %> (Quantity: <%= cartitem.quantity %>)</p>
+                                          <% } else { %>
+                                            <p><strong> <%= cartitem.product %> :</strong> ₹ <%= cartitem.price %> (Quantity: <%= cartitem.quantity %>)</p>
+                                        <% } %>
                         <% }); %>
                             <% } %>
-                                <% let totalPrice=0; cart.forEach(cartitem=> {
-                                    totalPrice += cartitem.price * cartitem.quantity;
-                                    });
-                                    %>
+                            <% let totalPrice=0; offers.forEach(offer=> {
+                                totalPrice += offer.offer ? ((offer.cart.price - (offer.cart.price * (offer.offer.discount / 100))) * offer.cart.quantity) : (offer.cart.price * offer.cart.quantity);
+                                });
+                                %>
                                     <p id="discount"><strong>Discount :</strong> ₹ 0 </p>
                                     <p id="totalData" data-total-price="<%= totalPrice %>"><strong>Total Amount
                                             :</strong> ₹ <%= totalPrice %>
