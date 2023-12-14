@@ -80,7 +80,6 @@ module.exports = {
           price: price,
           model: model,
           description: description,
-          rating: rating,
           image: image,
           stock: stock,
           isListed: isListed,

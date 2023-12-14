@@ -32,6 +32,7 @@ const checkSession = async (req, res, next) => {
 router.get("/login", controller.getLogin);
 router.get("/logout", controller.getLogout);
 router.post("/login", controller.postLogin);
+router.get("/dashboard", checkSession, controller.getAdminDashboard);
 router.get("/usermanagement", checkSession, controller.getUserManagement);
 router.get("/categorymanagement", checkSession, controller.getCategoryManagement);
 router.get("/couponmanagement", checkSession, controller.getCouponManagement);
@@ -51,5 +52,7 @@ router.post("/addcoupen/:id", controller.postEditCoupen);
 router.post("/addcoupen", controller.postCoupen);
 router.post("/addoffer", controller.postOffer);
 router.get("/unlistproduct/:id", controller.getUnlistProduct);
+router.get("/generate-pdf", controller.getGeneratePdf);
+router.get("/salesreport", controller.getExcelReprot);
 
 module.exports = router;

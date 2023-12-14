@@ -10,6 +10,8 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
+let referedcode = ""
+
 module.exports = {
   getLogin: (req, res) => {
     if (req.session.userId) {
@@ -121,6 +123,10 @@ module.exports = {
     const { username, email, password } = req.body;
     req.session.data = req.body;
 
+    if(req.body.referalcode != "") {
+      referedcode = req.body.referalcode
+    }
+
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     //Username validation
     if (
@@ -178,9 +184,25 @@ module.exports = {
             });
           };
 
+          const generateReferralCode = (length) => {
+            const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            let referralCode = "";
+        
+            for (let i = 0; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                referralCode += characters[randomIndex];
+            }
+        
+            return referralCode;
+          };
+
+          req.session.referalcode = generateReferralCode(8)
+
           const otp = generateOTP(6);
           req.session.otp = otp;
           await sendOtpEmail(email, otp);
+
+
 
           res.redirect("/otpvarification");
         } else {
@@ -249,14 +271,25 @@ module.exports = {
   postOtpVarification: async (req, res) => {
     const enteredOtp = req.body.otp;
     const otp = req.session.otp;
-    console.log(otp);
+    let iseligible = false
     if (enteredOtp === otp) {
       const userData = req.session.data;
+      if(referedcode != "") {
+        const isReferalValid = await User.findOne( { referalcode: referedcode } )
+        if(isReferalValid != null) {
+          console.log('referalcode valid')
+          iseligible = true
+          await User.updateOne({ referalcode: referedcode }, { $inc: { wallet: 100 } })
+        } else {
+          console.log('referalcode invalid')
+        }
+      }
       const newUser = new User({
         username: userData.username,
         email: userData.email,
         password: userData.password,
-        wallet: 0,
+        wallet: iseligible ? 50 : 0,
+        referalcode: req.session.referalcode,
         isBlocked: false,
       });
 
@@ -472,7 +505,7 @@ module.exports = {
     try {
       const userId = req.session.userId;
       const user = await User.findOne({ _id: userId });
-      const orders = await Order.find({ userid: userId });
+      const orders = await Order.find({ userid: userId }).sort({ orderdate: -1 });
       res.render("orders", { user, userId, orders });
     } catch (err) {
       cconsole.log("Error getting orders: ", err);

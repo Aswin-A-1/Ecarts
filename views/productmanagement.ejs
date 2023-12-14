@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Dashboard</title>
+    <title>Admin</title>
     <!-- Include Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
@@ -17,6 +17,7 @@
 
         .maindiv{
             height: 86vh;
+            overflow-y: scroll;
         }
 
         #sidebar a.nav-link:hover {
@@ -30,7 +31,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand text-primary" href="#">Admin Dashboard</a>
+            <a class="navbar-brand text-primary" href="#">Admin</a>
         </div>
     </nav>
 
@@ -40,6 +41,11 @@
             <nav id="sidebar" class="col-md-4 col-lg-2 d-md-block sidebar custom-border">
                 <div class="position-sticky">
                     <ul class="nav flex-column">
+                        <li class="nav-item mt-4">
+                            <a class="nav-link text-dark" href="/admin/dashboard">
+                                Dashboard
+                            </a>
+                        </li>
                         <li class="nav-item mt-4">
                             <a class="nav-link text-dark" href="/admin/usermanagement">
                                 User Management
@@ -58,6 +64,11 @@
                         <li class="nav-item mt-4">
                             <a class="nav-link text-dark" href="/order/ordermanagement">
                                 Order Management
+                            </a>
+                        </li>
+                        <li class="nav-item mt-4">
+                            <a class="nav-link text-dark" href="/admin/offermanagement">
+                                Offer Management
                             </a>
                         </li>
                         <li class="nav-item mt-4">
@@ -87,7 +98,6 @@
                                     <th>Category</th>
                                     <th>Price</th>
                                     <th>Model</th>
-                                    <th>Rating</th>
                                     <th>Image</th>
                                     <th>Stock</th>
                                     <th>Status</th>
@@ -111,9 +121,6 @@
                                             </td>
                                             <td>
                                                 <%= product.model %>
-                                            </td>
-                                            <td>
-                                                <%= product.rating %>
                                             </td>
                                             <td>
                                                 <img style="max-height: 50px; max-width: 50px;" src="/static/<%= product.image[0] %>" alt="no img">

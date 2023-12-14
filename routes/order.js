@@ -55,5 +55,8 @@ router.post("/ordrstatus/:id/:productid", upload, controller.postUpdateOrderstat
 router.get("/usercancelorder/:id/:productid", controller.getUserCancelOrder);
 router.get("/userreturnorder/:id/:productid", controller.getUserReturnOrder);
 router.get("/admincancelorder/:id/:productid", controller.getAdminCancelOrder);
+router.get("/orderdetails/:id/:productid", checkSessionAndBlocked, controller.getOrderDetails);
+router.get("/adminorderdetails/:id/:productid", checkSession, controller.getAdminOrderDetails);
+router.get("/invoice/:id/:productid", controller.getInvoice);
 
 module.exports = router;

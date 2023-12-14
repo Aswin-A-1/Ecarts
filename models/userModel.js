@@ -18,6 +18,9 @@ const userSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    referalcode: {
+        type: String,
+    },
     isBlocked: {
         type: Boolean,
         required: true,

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Dashboard</title>
+    <title>Admin</title>
     <!-- Include Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
@@ -31,7 +31,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand text-primary" href="#">Admin Dashboard</a>
+            <a class="navbar-brand text-primary" href="#">Admin</a>
         </div>
     </nav>
 
@@ -41,6 +41,11 @@
             <nav id="sidebar" class="col-md-4 col-lg-2 d-md-block sidebar custom-border">
                 <div class="position-sticky">
                     <ul class="nav flex-column">
+                        <li class="nav-item mt-4">
+                            <a class="nav-link text-dark" href="/admin/dashboard">
+                                Dashboard
+                            </a>
+                        </li>
                         <li class="nav-item mt-4">
                             <a class="nav-link text-dark" href="/admin/usermanagement">
                                 User Management
@@ -95,6 +100,7 @@
                                     <th>Status</th>
                                     <th>Order Date</th>
                                     <th>Action</th>
+                                    <th>Details</th>
                                 </tr>
                             </thead>
                             <tbody id="userTableBody">
@@ -158,6 +164,9 @@
                                                     <!-- <button onclick="openConfirmCancelModal('/order/admincancelorder/<%= order._id %>')" class="btn btn-danger">Cancel</button> -->
                                                     <% } %>
                                                 </form>
+                                            </td>
+                                            <td>
+                                                <a href="/order/adminorderdetails/<%= order._id %>/<%= product.productid %>" class="btn btn-primary">View</a>
                                             </td>
                                         </tr>
                                         <% }); %>
