@@ -22,6 +22,9 @@ const couponSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    usedUsers: [{
+        type: mongoose.Schema.Types.ObjectId,
+    }],
 });
 
 module.exports = mongoose.model('Coupon', couponSchema);

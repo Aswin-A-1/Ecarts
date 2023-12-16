@@ -80,7 +80,7 @@ module.exports = {
       });
 
       newCart.save();
-      await Wishlist.findOneAndDelete({ productid: productId });
+      await Wishlist.findOneAndDelete({ userid: userId, productid: productId });
       res.redirect("/cart");
     }
   },
@@ -120,6 +120,7 @@ module.exports = {
     const userData = await User.findOne({ _id: req.session.userId });
     const cart = await Cart.find({ userid: req.session.userId });
     const addresses = await Address.find({ userid: req.session.userId });
+    const coupons = await Coupon.find()
     const offersForProducts = [];
   for (const cartItem of cart) {
     const product = await Product.findById(cartItem.productid);
@@ -138,16 +139,19 @@ module.exports = {
       offers: offersForProducts,
       addresses,
       userData,
+      coupons,
     });
   },
 
   postPlaceOrder: async (req, res) => {
     try {
+      console.log(req.body)
       const userData = await User.findOne({ _id: req.session.userId });
       const cart = await Cart.find({ userid: req.session.userId });
       const currentDate = new Date();
       const discountAmount = parseFloat(req.body.discountprice);
       const address = await Address.findById(req.body.address);
+      const couponCode = req.body.appliedCouponCode
       let totalAmount = 0;
       let totalItems = 0;
       const productsForOrder = [];
@@ -225,6 +229,12 @@ module.exports = {
         await newWallet.save();
       }
 
+      if(discountAmount != 0 && couponCode != ''){
+        const couponData = await Coupon.findOne({ code: couponCode })
+        couponData.usedUsers.push(req.session.userId)
+        await couponData.save();
+      }
+
       await Cart.deleteMany({ userid: req.session.userId });
       res.render("orderconfirm");
     } catch (error) {
@@ -300,18 +310,31 @@ module.exports = {
   //   res.json({ discount: discount, totalPrice: totalPriceAfterDiscount });
   // },
   postApplyCoupon: async (req, res) => {
+    const userId = req.session.userId
     const { couponCode, totalPrice } = req.body;
+    const pricesString = req.body.prices;
+    const prices = pricesString.split(',').map(Number);
     const coupon = await Coupon.findOne({ code: couponCode });
+    let isUsed = true;
     let isExpired = false;
     let isValid = true;
     let isLimit = true;
     let discount = 0;
+    let isLimitForPrice = true
     if (coupon != null) {
       const currentDate = new Date();
       const expiryDate = new Date(coupon.expiryDate);
 
       if (currentDate <= expiryDate) {
-        if (totalPrice >= coupon.limit) {
+        prices.forEach(price => {
+          if(coupon.discount > price){
+            isLimitForPrice = false
+          }
+        })
+        if(!coupon.usedUsers.some(usedUser => usedUser.toString() === userId)){
+          isUsed = false
+        }
+        if (totalPrice >= coupon.limit && isLimitForPrice && !isUsed) {
           discount = coupon.discount;
         } else {
           isLimit = false;
@@ -322,14 +345,68 @@ module.exports = {
     } else {
       isValid = false;
     }
+    console.log('isUsed : ', isUsed)
 
-    res.json({
-      discount: discount,
-      isExpired: isExpired,
-      isValid: isValid,
-      isLimit: isLimit,
-    });
+    if(coupon != null){
+      res.json({
+        discount: discount,
+        code: coupon.code != null ? coupon.code : '',
+        isExpired: isExpired,
+        isValid: isValid,
+        isLimit: isLimit,
+        isUsed: isUsed,
+      });
+    } else {
+      res.json({
+        discount: discount,
+        code: '',
+        isExpired: isExpired,
+        isValid: isValid,
+        isLimit: isLimit,
+        isUsed: isUsed,
+      });
+    }
   },
+
+  // postApplyCoupon: async (req, res) => {
+  //   const { couponCode, totalPrice } = req.body;
+  //   const pricesString = req.body.prices;
+  //   const prices = pricesString.split(',').map(Number);
+  //   const coupon = await Coupon.findOne({ code: couponCode });
+  //   let isExpired = false;
+  //   let isValid = true;
+  //   let isLimit = true;
+  //   let discount = 0;
+  //   let isLimitForPrice = true
+  //   if (coupon != null) {
+  //     const currentDate = new Date();
+  //     const expiryDate = new Date(coupon.expiryDate);
+
+  //     if (currentDate <= expiryDate) {
+  //       prices.forEach(price => {
+  //         if(coupon.discount > price){
+  //           isLimitForPrice = false
+  //         }
+  //       })
+  //       if (totalPrice >= coupon.limit && isLimitForPrice) {
+  //         discount = coupon.discount;
+  //       } else {
+  //         isLimit = false;
+  //       }
+  //     } else {
+  //       isExpired = true;
+  //     }
+  //   } else {
+  //     isValid = false;
+  //   }
+
+  //   res.json({
+  //     discount: discount,
+  //     isExpired: isExpired,
+  //     isValid: isValid,
+  //     isLimit: isLimit,
+  //   });
+  // },
 
   postOrderPayment: async (req, res) => {
     try {

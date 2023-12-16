@@ -31,14 +31,25 @@
                                         <% } %>
                         <% }); %>
                             <% } %>
-                            <% let totalPrice=0; offers.forEach(offer=> {
-                                totalPrice += offer.offer ? ((offer.cart.price - (offer.cart.price * (offer.offer.discount / 100))) * offer.cart.quantity) : (offer.cart.price * offer.cart.quantity);
-                                });
-                                %>
+                            <% let totalPrice=0;
+                            let prices = [];
+
+                            offers.forEach(offer => {
+                                let price = 0;
+                                if (offer.offer) {
+                                    price = (offer.cart.price - (offer.cart.price * (offer.offer.discount / 100))) * offer.cart.quantity;
+                                } else {
+                                    price = offer.cart.price * offer.cart.quantity;
+                                }
+                                prices.push(price);
+                                totalPrice += price;
+                            });
+                            %>
                                     <p id="discount"><strong>Discount :</strong> ₹ 0 </p>
                                     <p id="totalData" data-total-price="<%= totalPrice %>"><strong>Total Amount
                                             :</strong> ₹ <%= totalPrice %>
                                     </p>
+                                    <p id="prices" data-prices="<%= prices.join(',') %>"></p>
                                     <br>
                                     <div class="form-group mt-4 d-flex align-items-end">
                                         <div class="flex-grow-1">
@@ -49,6 +60,7 @@
                                         </div>
                                         <div class="ml-2">
                                             <button class="btn btn-primary" id="applyCouponBtn">Apply</button>
+                                            <button class="btn btn-primary" id="viewCouponsBtn">Available Coupons</button>
                                         </div>
                                     </div>
                                     <p id="couponMessage" class="text-danger"></p>
@@ -60,6 +72,7 @@
             <div class="col-md-6">
                 <form action="/cart/placeorder" method="POST">
                     <input type="hidden" id="discountprice" name="discountprice" value="0">
+                    <input type="hidden" id="appliedCouponCode" name="appliedCouponCode" value="">
                     <% if( addresses.length> 0 ) { %>
                         <h4><strong>Select Address</strong></h4>
                         <% } %>
@@ -114,6 +127,32 @@
             </div>
         </div>
 
+<!-- Modal -->
+<div class="modal" id="couponModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Available Coupons</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul id="availableCouponsList">
+                    <% coupons.forEach(coupon => { %>
+                        <li>
+                            Code: <%= coupon.code %>, 
+                            Discount: ₹ <%= coupon.discount %>, 
+                            Expiry: <%= new Date(coupon.expiryDate).toLocaleDateString() %>
+                        </li>
+                    <% }); %>
+                </ul>
+            </div>
+        </div>
+    </div>
+ </div> 
+
+
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const wallet = document.getElementById('walletbalence');
@@ -153,12 +192,20 @@
                 });
                 const defaultPayment = paymentSelect.value;
                 toggleButtons(defaultPayment);
+
+                const viewCouponsBtn = document.getElementById('viewCouponsBtn');
+                const couponModal = document.getElementById('couponModal');
+
+                viewCouponsBtn.addEventListener('click', function () {
+                    $(couponModal).modal('show');
+                });
             });
         </script>
 
 
         <script>
             let couponDiscount = 0
+            let couponCodeForNetbannking = ''
             // Wait for the document to be fully loaded
             document.addEventListener('DOMContentLoaded', function () {
 
@@ -203,8 +250,8 @@
                     // Create an input element to hold the payment ID
                     var paymentIdInput = document.createElement('input');
                     paymentIdInput.type = 'hidden';
-                    paymentIdInput.name = 'razorpay_payment_id';
-                    paymentIdInput.value = response.razorpay_payment_id;
+                    paymentIdInput.name = 'appliedCouponCode';
+                    paymentIdInput.value = couponCodeForNetbannking;
 
                     // Add the input element to the form
                     form.appendChild(paymentIdInput);
@@ -289,19 +336,24 @@
             document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('discountprice').value = 0;
                 let totalPrice = document.getElementById('totalData').getAttribute('data-total-price');
+                let prices = document.getElementById('prices').getAttribute('data-prices');
                 const applyCouponBtn = document.getElementById('applyCouponBtn');
                 const couponCodeInput = document.getElementById('couponCode');
+                let isCouponApplied = false;
 
                 applyCouponBtn.addEventListener('click', function () {
+
                     const couponCode = couponCodeInput.value.trim();
 
                     // Fetch API request to apply coupon
+                    if (!isCouponApplied) {
+                        console.log('applying')
                     fetch('/cart/applycoupon', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ couponCode: couponCode, totalPrice: totalPrice }),
+                        body: JSON.stringify({ couponCode: couponCode, totalPrice: totalPrice, prices }),
                     })
                         .then(response => {
                             if (!response.ok) {
@@ -313,15 +365,20 @@
 
                             const discountValue = parseFloat(data.discount) || 0;
                             couponDiscount = discountValue
+                            couponCodeForNetbannking = data.code
                             const isValid = data.isValid || false;
                             const isExpired = data.isExpired || false;
                             const isLimit = data.isLimit
+                            const isUsed = data.isUsed
                             document.getElementById('discount').innerHTML = `<strong>Discount :</strong> ₹ ${discountValue}`;
                             document.getElementById('totalData').setAttribute('data-total-price', totalPrice - discountValue);
                             document.getElementById('totalData').innerHTML = `<strong>Total Amount :</strong> ₹ ${totalPrice - discountValue}`;
                             document.getElementById('discountprice').value = discountValue;
+                            document.getElementById('appliedCouponCode').value = couponCode;
 
-                            if (isValid && !isExpired) {
+                            if (isValid && !isExpired && !isUsed) {
+                                isCouponApplied = true;
+                                applyCouponBtn.textContent = 'Remove';
                                 if (isLimit) {
                                     couponMessage.textContent = '';
                                     couponSuccessMessage.textContent = `Coupon applied! Discount: ₹ ${discountValue}`;
@@ -334,15 +391,53 @@
                                 couponSuccessMessage.textContent = '';
                                 couponMessage.textContent = 'Coupon has expired.';
                             }
+                            if (isValid && isUsed) {
+                                couponSuccessMessage.textContent = '';
+                                couponMessage.textContent = 'You have already used this coupon.';
+                            }
                             if (!isValid) {
                                 couponSuccessMessage.textContent = '';
                                 couponMessage.textContent = 'Invalid coupon code. Please enter a valid code.';
                             }
+
+                            // if (isValid && !isExpired) {
+                            //     console.log('applyed')
+                            //     isCouponApplied = true;
+                            //     applyCouponBtn.textContent = 'Remove';
+                            //     if (isLimit) {
+                            //         couponMessage.textContent = '';
+                            //         couponSuccessMessage.textContent = `Coupon applied! Discount: ₹ ${discountValue}`;
+                            //     } else {
+                            //         couponSuccessMessage.textContent = '';
+                            //         couponMessage.textContent = 'This product cannot use this coupon because the price is lower than the coupon limit.';
+                            //     }
+                            // }
+                            // if (isValid && isExpired) {
+                            //     couponSuccessMessage.textContent = '';
+                            //     couponMessage.textContent = 'Coupon has expired.';
+                            // }
+                            // if (!isValid) {
+                            //     couponSuccessMessage.textContent = '';
+                            //     couponMessage.textContent = 'Invalid coupon code. Please enter a valid code.';
+                            // }
                         })
                         .catch(error => {
                             // Handle fetch errors
                             console.error('Error applying coupon:', error);
                         });
+                    } else {
+                        isCouponApplied = false;
+                        console.log('removed')
+                        document.getElementById('discount').innerHTML = `<strong>Discount :</strong> ₹ 0`;
+                        document.getElementById('totalData').setAttribute('data-total-price', totalPrice);
+                        document.getElementById('totalData').innerHTML = `<strong>Total Amount :</strong> ₹ ${totalPrice}`;
+                        document.getElementById('discountprice').value = 0;
+                        document.getElementById('couponCode').value = '';
+
+                        applyCouponBtn.textContent = 'Apply';
+                        couponSuccessMessage.textContent = '';
+                        couponMessage.textContent = '';
+                    }
                 });
             });
 
