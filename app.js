@@ -12,7 +12,9 @@ const paymentRoute = require('./routes/payment')
 const wishlistRoute = require('./routes/wishlist')
 const session = require("express-session")
 const crypto = require('crypto')
-const mongoURI = 'mongodb://127.0.0.1:27017/ecartdb'
+require("dotenv").config();
+const mongoURI = process.env.mongoURIString
+// const mongoURI = 'mongodb://127.0.0.1:27017/ecartdb'
 const secret = crypto.randomBytes(32).toString('hex')
 
 app.use(express.json());

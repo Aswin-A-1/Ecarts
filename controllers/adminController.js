@@ -561,4 +561,17 @@ module.exports = {
     }
   },
 
+  getDeleteImage: async (req, res) => {
+    try {
+      const id = req.body.productid;
+      const index = req.body.index;
+      const product = await Product.findById(id);
+      product.image.splice(index, 1)
+      await product.save()
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Failed to display the coupon edit page.");
+    }
+  },
+
 };

@@ -62,30 +62,45 @@ module.exports = {
   postEditProduct: async (req, res) => {
     const id = req.params.id;
     const image = req.files.map((file) => file.path.substring(6));
-    const {
-      productname,
-      category,
-      price,
-      model,
-      description,
-      stock,
-      isListed,
-    } = req.body;
-    await Product.updateOne(
-      { _id: id },
-      {
-        $set: {
-          productname: productname,
-          category: category,
-          price: price,
-          model: model,
-          description: description,
-          image: image,
-          stock: stock,
-          isListed: isListed,
-        },
-      }
-    );
+    console.log(image)
+    const product = await Product.findById(id)
+    product.productname = req.body.productname;
+    product.category = req.body.category;
+    product.price = req.body.price;
+    product.model = req.body.model;
+    product.description = req.body.description;
+    product.stock = req.body.stock;
+    product.isListed = req.body.isListed;
+    if(image.length > 0){
+      image.forEach(file => {
+        product.image.push(file)
+      })
+    }
+    await product.save()
+    // const {
+    //   productname,
+    //   category,
+    //   price,
+    //   model,
+    //   description,
+    //   stock,
+    //   isListed,
+    // } = req.body;
+    // await Product.updateOne(
+    //   { _id: id },
+    //   {
+    //     $set: {
+    //       productname: productname,
+    //       category: category,
+    //       price: price,
+    //       model: model,
+    //       description: description,
+    //       image: image,
+    //       stock: stock,
+    //       isListed: isListed,
+    //     },
+    //   }
+    // );
     res.redirect("/products/productmanagement");
   },
 

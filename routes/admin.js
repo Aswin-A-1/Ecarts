@@ -54,5 +54,6 @@ router.post("/addoffer", controller.postOffer);
 router.get("/unlistproduct/:id", controller.getUnlistProduct);
 router.get("/generate-pdf", controller.getGeneratePdf);
 router.get("/salesreport", controller.getExcelReprot);
+router.post('/deleteimage', controller.getDeleteImage)
 
 module.exports = router;
