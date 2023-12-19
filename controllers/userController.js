@@ -41,7 +41,7 @@ module.exports = {
   postLogin: async (req, res) => {
     const { email, password } = req.body;
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const passwordPattern = /^.{8,}$/;
+    const passwordPattern = /^.{1,}$/;
     if (!emailPattern.test(email) || !passwordPattern.test(password)) {
       res.render("userlogin", {
         message: "Email and password should be valid!",
