@@ -67,7 +67,7 @@
                             - ₹ <%= product.discount %>
                         </td>
                         <td>
-                            <% amount = (product.price - product.discount) * product.quantity %>
+                            <% amount = (product.price * product.quantity) - product.discount  %>
                             ₹ <%= amount %>
                         </td>
                     </tr>
