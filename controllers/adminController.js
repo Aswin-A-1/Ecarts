@@ -5,6 +5,7 @@ const Order = require("../models/orderModel");
 const Coupon = require("../models/coupenModel");
 const Offer = require("../models/offerModel");
 const Address = require("../models/addressModel");
+const Banner = require("../models/bannerModel");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const PDFDocument  = require('pdfkit-table')
@@ -190,6 +191,16 @@ module.exports = {
     }
   },
 
+  getBannerManagement: async (req, res) => {
+    try {
+      const banners = await Banner.find();
+      res.render("bannermanagement", { banners });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Failed to fetch offers. Please try again.");
+    }
+  },
+
   getBlockUser: async (req, res) => {
     try {
       const user = await User.findOne({ _id: req.params.id });
@@ -231,6 +242,15 @@ module.exports = {
     }
   },
 
+  getBanner: async (req, res) => {
+    try {
+      res.render("addbanner");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Failed to get addbanner page.");
+    }
+  },
+
   getDeleteCategory: async (req, res) => {
     try {
       const categoryId = req.params.id;
@@ -261,6 +281,17 @@ module.exports = {
     } catch (err) {
       console.error(err);
       return res.status(500).send("Failed to delete offer");
+    }
+  },
+
+  getDeleteBanner: async (req, res) => {
+    try {
+      const bannerId = req.params.id;
+      await Banner.findByIdAndDelete(bannerId);
+      res.redirect("/admin/bannermanagement");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Failed to delete banner");
     }
   },
 
@@ -366,6 +397,13 @@ module.exports = {
     } else {
       res.render("addcategory", { message: "Category already exist!" });
     }
+  },
+  postBanner: async (req, res) => {
+    const newBanner = new Banner({
+      image: req.file.path.substring(6),
+    })
+    newBanner.save()
+    res.redirect("/admin/bannermanagement");
   },
 
   postOffer: async (req, res) => {

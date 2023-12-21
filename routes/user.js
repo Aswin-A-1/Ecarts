@@ -57,5 +57,6 @@ router.get('/cancelorder/:id', controller.getCancelOrder)
 router.get('/search', controller.getSearch)
 router.get('/shop', checkSessionAndBlocked, controller.getShop)
 router.get('/shop/:category', checkSessionAndBlocked, controller.getShopByCategory)
+router.post('/sortProducts', controller.postSortProducts)
 
 module.exports = router

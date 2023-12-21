@@ -41,6 +41,21 @@
         .suggestion-item:hover {
             background-color: #f8f9fa;
         }
+
+        .form-select {
+    width: 200px;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    background-color: #fff;
+    color: #495057;
+  }
+
+  .form-select:focus {
+    outline: none;
+    border-color: #80bdff; /* Change border color when focused */
+    box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25); /* Add a subtle box-shadow */
+  }
     </style>
 </head>
 
@@ -81,37 +96,30 @@
 
     <br>
     <br>
-    <div class="pl-5">
-        <h2 id="heading">
-            <%= categoryName %>
-        </h2>
-    </div>
-    <br>
-
-
-    <!-- <header class="navbar navbar-expand-lg navbar-light bg-primary">
-        <a class="navbar-brand text-light" href="#">E-Cart</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <input class="form-control mr-sm-2 ml-auto col-md-4" type="search" placeholder="Search Product"
-                aria-label="Search">
-            <button class="btn btn-light" type="submit">Search</button>
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item"><a class="nav-link text-light" href="/cart">Cart</a></li>
-                <li class="nav-item"><a class="nav-link text-light" href="/wishlist">Wishlist</a></li>
-                <li class="nav-item"><a class="nav-link text-light" href="/userprofile/<%= userId %>">Account</a></li>
-                <li class="nav-item"><a class="nav-link text-light" href="/logout">Logout</a></li>
-
-                <li class="nav-item"><a class="nav-link text-light" href="/cart"><i class="fas fa-shopping-cart"></i> Cart</a></li>
-                <li class="nav-item"><a class="nav-link text-light" href="#"><i class="fas fa-heart"></i> Wishlist</a></li>
-                <li class="nav-item"><a class="nav-link text-light" href="/userprofile/<%= userId %>"><i class="fas fa-user"></i> Account</a></li>
-                <li class="nav-item"><a class="nav-link text-light" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
+    <div class="row">
+        <div>
+            <div class="pl-5">
+                <h2 id="heading">
+                    <%= categoryName %>
+                </h2>
+            </div>
         </div>
-    </header> -->
+        <div class="ml-5">
+            <div>
+                <div class="mb-3">
+                    <select class="form-select" id="sortDropdown" onchange="sortProducts(this.value, '<%= categoryName %>')">
+                        <option value="default" selected>Sort Price</option>
+                        <option value="asc">Low to High</option>
+                        <option value="desc">High to Low</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+      
+      <br>
 
 
     <div class="container productsdiv" id="carddiv">
@@ -169,6 +177,71 @@
     <%- include('footer') %>
 
         <script>
+
+function sortProducts(order, category) {
+    const requestData = {
+    category: category,
+    order: order
+  };
+  fetch(`/sortProducts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestData)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(data => {
+    const productsContainer = document.getElementById('productscontainer');
+    productsContainer.innerHTML = ''; // Clear existing products
+
+    if (data.products.length > 0) {
+      data.products.forEach(product => {
+        const productDiv = document.createElement('div');
+        productDiv.classList.add('col-md-3');
+        productDiv.innerHTML = `
+                            <div class="card mb-3 position-relative">
+                                <div class="col-md-10 mx-auto mt-2">
+                                    <img style="max-height: 200px; max-width: 200px;" src="/static/${product.image[0]}"
+                                        class="card-img-top" alt="Product 1">
+                                </div>
+                                <div class="card-body">
+                                    <div style="height: 50px;">
+                                        <h5 class="card-title">
+                                            ${product.productname}
+                                        </h5>
+                                    </div>
+                                    <p class="card-text">Price: ₹ ${product.price}</p>
+                                    <div class="d-flex justify-content-between mt-2">
+                                        <a href="/product/${product._id}" class="btn btn-primary">View</a>
+                                        <button class="btn btn-link wishlist-btn"
+                                            onclick="toggleWishlist('${product._id}')">
+                                            <!-- Add your wishlist icon logic here -->
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+        productsContainer.appendChild(productDiv);
+      });
+    } else {
+      // Handle case where no products are found
+      const noResultDiv = document.createElement('div');
+      noResultDiv.textContent = 'No products found.';
+      productsContainer.appendChild(noResultDiv);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    // Handle errors or display a message to the user
+  });
+}
+
 
             function toggleWishlist(productid) {
                 const icon = document.getElementById(`fa-heart${productid}`);

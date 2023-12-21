@@ -6,6 +6,7 @@ const Category = require("../models/categoryModel");
 const Wsihlist = require("../models/wishlistModel");
 const Wallet = require("../models/walletModel");
 const Offer = require("../models/offerModel");
+const Banner = require("../models/bannerModel");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
@@ -90,7 +91,9 @@ module.exports = {
       const wishlistProducts = await Product.find({
         _id: { $in: wishlistProductIds },
       }).select('productname');
-      res.render("userhome", { products, userId, wishlistProducts });
+      const banners = await Banner.find()
+      console.log(banners)
+      res.render("userhome", { products, userId, wishlistProducts, banners });
     } catch (err) {
       console.error(err);
       return res.status(500).send("Failed to get homepage. Please try again.");
@@ -614,6 +617,7 @@ module.exports = {
       return res.status(500).send("Error getting shop.");
     }
   },
+
   getShopByCategory: async (req, res) => {
     try {
       const userId = req.session.userId;
@@ -632,4 +636,23 @@ module.exports = {
       return res.status(500).send("Error getting shop by category.");
     }
   },
+
+  postSortProducts: async (req, res) => {
+    try {
+      let products
+      const categoryDetails = await Category.findOne({ category: req.body.category })
+      const wishlist = await Wsihlist.find()
+      if(req.body.order == 'asc') {
+        products = await Product.find({ category: categoryDetails._id }).sort({ price: 1 });
+      } else if(req.body.order == 'desc') {
+        products = await Product.find({ category: categoryDetails._id }).sort({ price: -1 });
+      } else {
+        products = await Product.find({ category: categoryDetails._id });
+      }
+      res.json({ products: products, wishlist });
+    } catch (err) {
+      console.log("Error sorting products: ", err);
+    }
+  },
+
 };

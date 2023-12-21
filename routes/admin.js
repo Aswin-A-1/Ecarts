@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
     );
   },
 });
-const upload = multer({ storage: storage }).array('img', 4);
+const upload = multer({ storage: storage }).single('img');
 
 const checkSession = async (req, res, next) => {
   if (req.session.admin) {
@@ -37,19 +37,23 @@ router.get("/usermanagement", checkSession, controller.getUserManagement);
 router.get("/categorymanagement", checkSession, controller.getCategoryManagement);
 router.get("/couponmanagement", checkSession, controller.getCouponManagement);
 router.get("/offermanagement", checkSession, controller.getOfferManagement);
+router.get("/bannermanagement", checkSession, controller.getBannerManagement);
 router.get("/blockuser/:id", controller.getBlockUser);
 router.get("/addcategory", checkSession, controller.getCategory);
 router.get("/addcoupon", checkSession, controller.getCoupon);
 router.get("/addoffer", checkSession, controller.getOffer);
+router.get("/addbanner", checkSession, controller.getBanner);
 router.get("/deletecategory/:id", controller.getDeleteCategory);
 router.get("/deletecoupon/:id", controller.getDeleteCoupon);
 router.get("/deleteoffer/:id", controller.getDeleteOffer);
+router.get("/deletebanner/:id", controller.getDeleteBanner);
 router.get("/editcategory/:id", checkSession, controller.getEditCategory);
 router.get("/editcoupon/:id", checkSession, controller.getEditCoupon);
 router.post("/addcategory/:id", controller.postEditCategory);
 router.post("/addcategory", controller.postCategory);
 router.post("/addcoupen/:id", controller.postEditCoupen);
 router.post("/addcoupen", controller.postCoupen);
+router.post("/addbanner",upload, controller.postBanner);
 router.post("/addoffer", controller.postOffer);
 router.get("/unlistproduct/:id", controller.getUnlistProduct);
 router.get("/generate-pdf", controller.getGeneratePdf);

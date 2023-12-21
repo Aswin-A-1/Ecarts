@@ -204,34 +204,40 @@ module.exports = {
 
       const headerY = 300; // Adjust this value based on your layout
       doc.font("Helvetica-Bold");
-      doc.text("Name", 100, headerY, { width: 150, lineGap: 6 });
-      doc.text("Status", 300, headerY, { width: 150, lineGap: 5 });
-      doc.text("quantity", 400, headerY, { width: 150, lineGap: 5 });
+      doc.text("Name", 60, headerY, { width: 150, lineGap: 6 });
+      doc.text("Status", 220, headerY, { width: 50, lineGap: 5 });
+      doc.text("quantity", 320, headerY, { width: 150, lineGap: 5 });
     
-      doc.text("Price", 500, headerY, { width: 50, lineGap: 5 });
+      doc.text("Price", 370, headerY, { width: 50, lineGap: 5 });
+      doc.text("Discount", 420, headerY, { width: 50, lineGap: 5 });
       doc.font("Helvetica");
 
       // Table rows
       const contentStartY = headerY + 30; // Adjust this value based on your layout
       let currentY = contentStartY;
 
-      doc.text(productdata.product || "", 100, currentY, {
+      doc.text(productdata.product || "", 60, currentY, {
         width: 150,
         lineGap: 5,
     });
 
-    doc.text(productdata.status || "", 300, currentY, {
+    doc.text(productdata.status || "", 220, currentY, {
         width: 50,
         lineGap: 5,
     });
  
-    doc.text(productdata.quantity || "", 400, currentY, {
+    doc.text(productdata.quantity || "", 320, currentY, {
         width: 50,
         lineGap: 5,
     });
  
 
-    doc.text(productdata.price || "", 500, currentY, {
+    doc.text(productdata.price || "", 370, currentY, {
+        width: 50,
+        lineGap: 5,
+    });
+
+    doc.text(productdata.discount || "0", 420, currentY, {
         width: 50,
         lineGap: 5,
     });
@@ -245,7 +251,7 @@ module.exports = {
             );
             currentY += lineHeight + 10; // Adjust this value based on your layout
        
-        doc.text(`Total Price: ${productdata.price * productdata.quantity  || ""}`, {
+        doc.text(`Total Price: ${(productdata.price * productdata.quantity) - productdata.discount  || ""}`, {
             width: 400, // Adjust the width based on your layout
             lineGap: 5,
         });
